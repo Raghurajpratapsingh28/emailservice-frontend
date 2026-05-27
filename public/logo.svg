@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="engage-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7a00" />
+      <stop offset="50%" stop-color="#ff005c" />
+      <stop offset="100%" stop-color="#7a00ff" />
+    </linearGradient>
+  </defs>
+  {/* Outer track representing loops/automation */}
+  <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14s14-6.268 14-14S23.732 2 16 2zm0 24c-5.523 0-10-4.477-10-10S10.477 6 16 6s10 4.477 10 10s-4.477 10-10 10z" fill="url(#engage-gradient)" opacity="0.12"/>
+  {/* Dynamic glowing growth loop */}
+  <path d="M16 6c-5.523 0-10 4.477-10 10s4.477 10 10 10c3.58 0 6.724-1.884 8.485-4.715a1.5 1.5 0 0 0-2.553-1.57C20.64 21.84 18.45 23 16 23c-3.866 0-7-3.134-7-7s3.134-7 7-7c2.45 0 4.64 1.16 5.932 3.285a1.5 1.5 0 1 0 2.553-1.57C22.724 7.884 19.58 6 16 6z" fill="url(#engage-gradient)" />
+  {/* Floating engagement bubble indicator */}
+  <path d="M22.5 14.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" fill="url(#engage-gradient)" />
+</svg>
