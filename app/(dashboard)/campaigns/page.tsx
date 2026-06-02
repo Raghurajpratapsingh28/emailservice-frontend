@@ -1,7 +1,5 @@
-"use client"
-
-import CampaignsView from "@/components/campaigns/campaigns-view"
+import CampaignWorkspaceListView from "@/components/campaigns/campaign-workspace-list-view"
 
 export default function CampaignsPage() {
-  return <CampaignsView />
+  return <CampaignWorkspaceListView />
 }

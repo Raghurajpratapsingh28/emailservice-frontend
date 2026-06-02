@@ -1,7 +1,5 @@
-"use client"
-
-import SegmentsView from "@/components/segments/segments-view"
+import SegmentWorkspaceListView from "@/components/segments/segment-workspace-list-view"
 
 export default function SegmentsPage() {
-  return <SegmentsView />
+  return <SegmentWorkspaceListView />
 }

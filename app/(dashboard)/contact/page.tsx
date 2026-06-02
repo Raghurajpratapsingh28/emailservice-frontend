@@ -1,7 +1,5 @@
-"use client"
-
-import ContactsView from "@/components/contacts/contacts-view"
+import ContactWorkspaceListView from "@/components/contacts/contact-workspace-list-view"
 
 export default function ContactPage() {
-  return <ContactsView />
+  return <ContactWorkspaceListView />
 }

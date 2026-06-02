@@ -21,6 +21,7 @@ export type Campaign = {
   createdAt: string
   updatedAt: string
   errorMessage?: string
+  version?: number
 }
 
 export const VERIFIED_DOMAINS = [

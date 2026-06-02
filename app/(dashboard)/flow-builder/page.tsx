@@ -1,7 +1,5 @@
-"use client"
-
-import WorkflowsView from "@/components/workflows/workflows-view"
+import FlowBuilderWorkspaceListView from "@/components/workflows/flow-builder-workspace-list-view"
 
 export default function FlowBuilderPage() {
-  return <WorkflowsView />
+  return <FlowBuilderWorkspaceListView />
 }

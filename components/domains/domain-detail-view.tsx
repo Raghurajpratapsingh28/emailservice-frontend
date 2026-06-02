@@ -98,7 +98,7 @@ export default function DomainDetailView({ domain: d, onBack, onReverify, onDele
         {/* DNS Records */}
         <div className="xl:col-span-2 p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C]">
           <h3 className="text-xs font-semibold text-white/80 tracking-tight mb-4">DNS Records</h3>
-          <DnsRecordsTable records={d.dnsRecords} />
+          <DnsRecordsTable dns={{ spf: { type: "TXT", host: "@", value: "" }, dkim: [], dmarc: { type: "TXT", host: "", value: "" } }} />
         </div>
 
         {/* Verification status */}

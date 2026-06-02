@@ -1,15 +1,7 @@
-"use client"
-
 import { use } from "react"
 import ContactsView from "@/components/contacts/contacts-view"
 
-interface ContactWorkspacePageProps {
-  params: Promise<{
-    slug: string
-  }>
-}
-
-export default function ContactWorkspacePage({ params }: ContactWorkspacePageProps) {
+export default function ContactWorkspacePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
-  return <ContactsView workspaceSlug={slug} />
+  return <ContactsView workspaceId={slug} />
 }

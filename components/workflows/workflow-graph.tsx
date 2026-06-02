@@ -3,7 +3,7 @@
 import { useState } from "react"
 import {
   WorkflowNode, NodeType, TriggerConfig, EmailConfig, DelayConfig,
-  makeNode, nodeLabel, validateNodes, VERIFIED_DOMAINS
+  makeNode, nodeLabel, validateNodes,
 } from "@/lib/workflows-data"
 import { Zap, Mail, Clock, Square, Plus, Trash2, X, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react"
 
@@ -237,9 +237,7 @@ function EmailPanel({ node, onChange }: { node: WorkflowNode; onChange: (c: Emai
         <input value={c.subject} onChange={(e) => onChange({ ...c, subject: e.target.value })} placeholder="Email subject..." className={inputCls} />
       </PanelField>
       <PanelField label="From Email *">
-        <SelectWrap value={c.fromEmail} onChange={(v) => onChange({ ...c, fromEmail: v })}>
-          {VERIFIED_DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
-        </SelectWrap>
+        <input type="email" value={c.fromEmail} onChange={(e) => onChange({ ...c, fromEmail: e.target.value })} placeholder="hello@yourdomain.com" className={inputCls} />
       </PanelField>
       <PanelField label="From Name">
         <input value={c.fromName} onChange={(e) => onChange({ ...c, fromName: e.target.value })} placeholder="e.g. EngageIQ Team" className={inputCls} />

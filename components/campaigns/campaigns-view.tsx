@@ -1,145 +1,101 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { initialCampaigns, Campaign } from "@/lib/campaigns-data"
-import { Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Plus, ArrowLeft, Loader2 } from "lucide-react"
+import { campaignsService } from "@/lib/campaigns-service"
+import type { Campaign } from "@/lib/campaigns-data"
 import CampaignsTable from "./campaigns-table"
 import CampaignFilters from "./campaign-filters"
-import CampaignFormModal from "./campaign-form-modal"
-import ScheduleModal from "./schedule-modal"
-import SendNowDialog from "./send-now-dialog"
-import CampaignDetailView from "./campaign-detail-view"
 
-export default function CampaignsView() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns)
-  const [view, setView] = useState<"list" | "detail">("list")
-  const [selected, setSelected] = useState<Campaign | null>(null)
-  const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<Campaign | null>(null)
-  const [scheduleTarget, setScheduleTarget] = useState<Campaign | null>(null)
-  const [sendTarget, setSendTarget] = useState<Campaign | null>(null)
+interface Props { workspaceId?: string }
 
-  // Filters
+export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
+  const router = useRouter()
+  const workspaceId = propWorkspaceId ?? ""
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [total, setTotal] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState("all")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
+  const [page, setPage] = useState(1)
 
-  const filtered = useMemo(() => campaigns.filter((c) => {
-    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
-    if (status !== "all" && c.status !== status) return false
-    if (dateFrom && new Date(c.createdAt) < new Date(dateFrom)) return false
-    if (dateTo && new Date(c.createdAt) > new Date(dateTo)) return false
-    return true
-  }), [campaigns, search, status, dateFrom, dateTo])
+  const load = useCallback(async () => {
+    if (!workspaceId) return
+    setIsLoading(true); setError(null)
+    try {
+      const res = await campaignsService.list(workspaceId, {
+        page, pageSize: 50,
+        status: status !== "all" ? status : undefined,
+        search: search || undefined,
+        fromDate: dateFrom || undefined,
+        toDate: dateTo || undefined,
+      })
+      setCampaigns(res.items); setTotal(res.total)
+    } catch (err: any) { setError(err.message || "Failed to load campaigns") }
+    finally { setIsLoading(false) }
+  }, [workspaceId, page, status, search, dateFrom, dateTo])
 
-  const update = (id: string, patch: Partial<Campaign>) =>
-    setCampaigns((prev) => prev.map((c) => c.id === id ? { ...c, ...patch, updatedAt: new Date().toISOString() } : c))
+  useEffect(() => { load() }, [load])
 
-  const handleView = (c: Campaign) => { setSelected(c); setView("detail") }
-  const handleEdit = (c: Campaign) => { setEditing(c); setFormOpen(true) }
-  const handlePause = (c: Campaign) => update(c.id, { status: "paused" })
-  const handleResume = (c: Campaign) => update(c.id, { status: c.scheduledAt ? "scheduled" : "sending" })
-  const handleDelete = (c: Campaign) => {
-    if (!window.confirm(`Delete "${c.name}"? This cannot be undone.`)) return
-    setCampaigns((prev) => prev.filter((x) => x.id !== c.id))
-    if (view === "detail") setView("list")
+  const patch = (id: string, p: Partial<Campaign>) => setCampaigns((prev) => prev.map((c) => c.id === id ? { ...c, ...p } : c))
+
+  const handlePause = async (c: Campaign) => {
+    patch(c.id, { status: "paused" })
+    try { patch(c.id, await campaignsService.pause(workspaceId, c.id)) } catch (e: any) { patch(c.id, { status: c.status }); alert(e.message) }
   }
-  const handleScheduleConfirm = (c: Campaign, scheduledAt: string) =>
-    update(c.id, { status: "scheduled", scheduledAt })
-  const handleSendNowConfirm = (c: Campaign) =>
-    update(c.id, { status: "sending", sentAt: null })
-
-  const handleSave = (data: Partial<Campaign>) => {
-    if (editing) {
-      update(editing.id, data)
-      if (selected?.id === editing.id) setSelected((p) => p ? { ...p, ...data } : p)
-    } else {
-      const newC: Campaign = {
-        id: `cmp-${Date.now()}`,
-        name: data.name ?? "Untitled",
-        type: "regular",
-        status: "draft",
-        subject: data.subject ?? "",
-        previewText: data.previewText ?? "",
-        fromEmail: data.fromEmail ?? "",
-        fromName: data.fromName ?? "",
-        replyTo: data.replyTo ?? "",
-        segmentId: data.segmentId ?? "",
-        segmentName: data.segmentName ?? "",
-        recipientCount: data.recipientCount ?? 0,
-        scheduledAt: null,
-        sentAt: null,
-        htmlBody: data.htmlBody ?? "",
-        plainText: data.plainText ?? "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setCampaigns((prev) => [newC, ...prev])
-    }
-    setEditing(null)
+  const handleResume = async (c: Campaign) => {
+    try { patch(c.id, await campaignsService.resume(workspaceId, c.id)) } catch (e: any) { alert(e.message) }
+  }
+  const handleDelete = async (c: Campaign) => {
+    if (!window.confirm(`Delete "${c.name}"?`)) return
+    try { await campaignsService.delete(workspaceId, c.id); load() } catch (e: any) { alert(e.message) }
+  }
+  const handleSendNow = async (c: Campaign) => {
+    if (!window.confirm(`Send "${c.name}" to ${c.recipientCount.toLocaleString()} contacts now?`)) return
+    try { await campaignsService.send(workspaceId, c.id); patch(c.id, { status: "sending" }) } catch (e: any) { alert(e.message) }
   }
 
-  const STATUS_COUNTS = {
-    total: campaigns.length,
-    draft: campaigns.filter((c) => c.status === "draft").length,
-    scheduled: campaigns.filter((c) => c.status === "scheduled").length,
-    sending: campaigns.filter((c) => c.status === "sending").length,
-    sent: campaigns.filter((c) => c.status === "sent").length,
-  }
-
-  if (view === "detail" && selected) {
-    const live = campaigns.find((c) => c.id === selected.id) ?? selected
-    return (
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="max-w-[1500px] mx-auto select-none">
-        <CampaignDetailView
-          campaign={live}
-          onBack={() => setView("list")}
-          onEdit={handleEdit}
-          onSchedule={(c) => setScheduleTarget(c)}
-          onSendNow={(c) => setSendTarget(c)}
-          onPause={handlePause}
-          onResume={handleResume}
-          onDelete={handleDelete}
-        />
-        <CampaignFormModal isOpen={formOpen} onClose={() => { setFormOpen(false); setEditing(null) }} campaign={editing} onSave={handleSave} />
-        <ScheduleModal campaign={scheduleTarget} onClose={() => setScheduleTarget(null)} onConfirm={handleScheduleConfirm} />
-        <SendNowDialog campaign={sendTarget} onClose={() => setSendTarget(null)} onConfirm={handleSendNowConfirm} />
-      </motion.div>
-    )
+  const COUNTS = {
+    total, draft: campaigns.filter(c => c.status === "draft").length,
+    scheduled: campaigns.filter(c => c.status === "scheduled").length,
+    sending: campaigns.filter(c => c.status === "sending").length,
+    sent: campaigns.filter(c => c.status === "sent").length,
   }
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          {propWorkspaceId && (
+            <button onClick={() => router.push("/campaigns")} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+              <ArrowLeft className="w-3 h-3" /> All Workspaces
+            </button>
+          )}
           <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Broadcasts Dispatch</span>
           <div className="flex items-center gap-3 mt-1.5">
             <h1 className="text-3xl font-extrabold tracking-tight text-white/95 leading-none">Campaigns</h1>
             <div className="flex items-baseline gap-1 bg-[#111319] border border-[#1E2230] px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-[#FE8A5C]">
-              <span>{campaigns.length}</span>
-              <span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
+              <span>{total}</span><span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
             </div>
           </div>
         </div>
-        <button
-          onClick={() => { setEditing(null); setFormOpen(true) }}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer"
-        >
+        <button onClick={() => router.push(`/campaigns/${workspaceId}/create`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
           <Plus className="w-4 h-4" /> Create Campaign
         </button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         {[
-          { label: "Total", value: STATUS_COUNTS.total, color: "text-white" },
-          { label: "Draft", value: STATUS_COUNTS.draft, color: "text-zinc-400" },
-          { label: "Scheduled", value: STATUS_COUNTS.scheduled, color: "text-blue-400" },
-          { label: "Sending", value: STATUS_COUNTS.sending, color: "text-amber-400" },
-          { label: "Sent", value: STATUS_COUNTS.sent, color: "text-emerald-400" },
+          { label: "Total", value: COUNTS.total, color: "text-white" },
+          { label: "Draft", value: COUNTS.draft, color: "text-zinc-400" },
+          { label: "Scheduled", value: COUNTS.scheduled, color: "text-blue-400" },
+          { label: "Sending", value: COUNTS.sending, color: "text-amber-400" },
+          { label: "Sent", value: COUNTS.sent, color: "text-emerald-400" },
         ].map(({ label, value, color }) => (
           <div key={label} className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
             <span className="text-[10px] font-mono text-[#7A8499] uppercase tracking-wider">{label}</span>
@@ -148,31 +104,38 @@ export default function CampaignsView() {
         ))}
       </div>
 
-      {/* Filters */}
       <CampaignFilters search={search} setSearch={setSearch} status={status} setStatus={setStatus} dateFrom={dateFrom} setDateFrom={setDateFrom} dateTo={dateTo} setDateTo={setDateTo} />
 
-      {/* Table */}
-      <CampaignsTable
-        campaigns={filtered}
-        onView={handleView}
-        onEdit={handleEdit}
-        onSchedule={(c) => setScheduleTarget(c)}
-        onSendNow={(c) => setSendTarget(c)}
-        onPause={handlePause}
-        onResume={handleResume}
-        onDelete={handleDelete}
-      />
-
-      {filtered.length > 0 && (
-        <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8499] px-1">
-          <span>Showing {filtered.length} of {campaigns.length} campaigns</span>
-          <span>Page 1 of 1</span>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
+      ) : error ? (
+        <div className="p-8 rounded-3xl bg-[#0F1016]/95 border border-red-500/30 text-center">
+          <p className="text-sm text-red-400">{error}</p>
+          <button onClick={load} className="mt-3 text-xs text-[#6B7280] underline hover:text-white cursor-pointer">Retry</button>
         </div>
+      ) : (
+        <CampaignsTable
+          campaigns={campaigns}
+          onView={(c) => router.push(`/campaigns/${workspaceId}/details/${c.id}`)}
+          onEdit={(c) => router.push(`/campaigns/${workspaceId}/edit/${c.id}`)}
+          onSchedule={(c) => router.push(`/campaigns/${workspaceId}/details/${c.id}`)}
+          onSendNow={handleSendNow}
+          onPause={handlePause}
+          onResume={handleResume}
+          onDelete={handleDelete}
+        />
       )}
 
-      <CampaignFormModal isOpen={formOpen} onClose={() => { setFormOpen(false); setEditing(null) }} campaign={editing} onSave={handleSave} />
-      <ScheduleModal campaign={scheduleTarget} onClose={() => setScheduleTarget(null)} onConfirm={handleScheduleConfirm} />
-      <SendNowDialog campaign={sendTarget} onClose={() => setSendTarget(null)} onConfirm={handleSendNowConfirm} />
+      {!isLoading && !error && total > 0 && (
+        <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8499] px-1">
+          <span>Showing {campaigns.length} of {total} campaigns</span>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 bg-[#12141A] border border-[#1E2230] rounded-lg disabled:opacity-40 hover:border-[#383E58] transition-all cursor-pointer disabled:cursor-not-allowed">Prev</button>
+            <span>Page {page}</span>
+            <button onClick={() => setPage(p => p + 1)} disabled={campaigns.length < 50} className="px-2.5 py-1 bg-[#12141A] border border-[#1E2230] rounded-lg disabled:opacity-40 hover:border-[#383E58] transition-all cursor-pointer disabled:cursor-not-allowed">Next</button>
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 }

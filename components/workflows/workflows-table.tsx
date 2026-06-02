@@ -55,10 +55,10 @@ export default function WorkflowsTable({ workflows, onView, onEdit, onPublish, o
                 <td className="px-4 py-3.5 text-[#B0B8C8] max-w-[160px] truncate">{triggerLabel(w.nodes)}</td>
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-2 font-mono text-[10px]">
-                    <span className="text-white/80">{w.executions.total.toLocaleString()}</span>
-                    <span className="text-emerald-400">{w.executions.completed.toLocaleString()}</span>
-                    <span className="text-red-400">{w.executions.failed}</span>
-                    <span className="text-blue-400">{w.executions.running}</span>
+                    <span className="text-white/80">{w.executionStats.total.toLocaleString()}</span>
+                    <span className="text-emerald-400">{w.executionStats.completed.toLocaleString()}</span>
+                    <span className="text-red-400">{w.executionStats.failed}</span>
+                    <span className="text-blue-400">{w.executionStats.running}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3.5 text-[#B0B8C8] font-mono whitespace-nowrap">

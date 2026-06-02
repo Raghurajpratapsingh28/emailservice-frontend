@@ -1,7 +1,5 @@
-"use client"
-
-import DomainsView from "@/components/domains/domains-view"
+import DomainsWorkspaceListView from "@/components/domains/domains-workspace-list-view"
 
 export default function DomainsPage() {
-  return <DomainsView />
+  return <DomainsWorkspaceListView />
 }

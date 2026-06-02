@@ -1,7 +1,5 @@
-"use client"
-
-import TransactionalView from "@/components/transactional/transactional-view"
+import TransactionalWorkspaceListView from "@/components/transactional/transactional-workspace-list-view"
 
 export default function TransactionalPage() {
-  return <TransactionalView />
+  return <TransactionalWorkspaceListView />
 }

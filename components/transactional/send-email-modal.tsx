@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { EmailTemplate, VERIFIED_DOMAINS, TransactionalSend } from "@/lib/transactional-data"
+import { EmailTemplate, TransactionalSend } from "@/lib/transactional-data"
 import { X, Plus, ChevronDown, AlertTriangle } from "lucide-react"
 
 export type SendFormData = Partial<TransactionalSend> & { htmlBody?: string }
@@ -16,7 +16,7 @@ interface Props {
 export default function SendEmailModal({ isOpen, onClose, templates, onSend }: Props) {
   const [recipients, setRecipients] = useState<string[]>([])
   const [recipientInput, setRecipientInput] = useState("")
-  const [fromEmail, setFromEmail] = useState(VERIFIED_DOMAINS[0])
+  const [fromEmail, setFromEmail] = useState("")
   const [fromName, setFromName] = useState("")
   const [replyTo, setReplyTo] = useState("")
   const [mode, setMode] = useState<"custom" | "template">("custom")
@@ -51,7 +51,7 @@ export default function SendEmailModal({ isOpen, onClose, templates, onSend }: P
   const validate = (): string[] => {
     const errs: string[] = []
     if (recipients.length === 0) errs.push("At least 1 recipient required.")
-    if (!VERIFIED_DOMAINS.includes(fromEmail)) errs.push("Sender domain is not verified.")
+    if (!fromEmail.trim()) errs.push("Sender email is required.")
     if (mode === "custom" && !subject.trim()) errs.push("Subject is required.")
     if (mode === "custom" && !htmlBody.trim() && !plainText.trim()) errs.push("HTML body or plain text required.")
     if (mode === "template" && !templateId) errs.push("Select a template.")
@@ -116,9 +116,7 @@ export default function SendEmailModal({ isOpen, onClose, templates, onSend }: P
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className={labelCls}>From Email *</label>
-                <SelectWrap value={fromEmail} onChange={setFromEmail}>
-                  {VERIFIED_DOMAINS.map((d) => <option key={d} value={d}>{d}</option>)}
-                </SelectWrap>
+                <input type="email" value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} placeholder="hello@yourdomain.com" className={inputCls} />
               </div>
               <div className="space-y-1.5">
                 <label className={labelCls}>From Name</label>

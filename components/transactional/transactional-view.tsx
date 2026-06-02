@@ -1,43 +1,102 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import {
-  initialSends, initialTemplates, TransactionalSend, EmailTemplate,
-  VERIFIED_DOMAINS
-} from "@/lib/transactional-data"
-import { Plus, Search, ChevronDown } from "lucide-react"
+import { Plus, Search, ChevronDown, ArrowLeft, Loader2 } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
 import SendsTable from "./sends-table"
-import SendDetailPanel from "./send-detail-panel"
-import SendEmailModal from "./send-email-modal"
-import { SendFormData } from "./send-email-modal"
 import TemplatesTable from "./templates-table"
-import TemplateFormModal from "./template-form-modal"
 import { SendStatusBadge, TemplateStatusBadge } from "./status-badges"
+import { transactionalService, type EmailSend, type EmailTemplate } from "@/lib/transactional-service"
+import type { TransactionalSend, EmailTemplate as LocalEmailTemplate } from "@/lib/transactional-data"
 
 type Tab = "sends" | "templates"
 
-export default function TransactionalView() {
-  const [tab, setTab] = useState<Tab>("sends")
+interface Props { workspaceId?: string }
 
-  // Sends state
-  const [sends, setSends] = useState<TransactionalSend[]>(initialSends)
-  const [selectedSend, setSelectedSend] = useState<TransactionalSend | null>(null)
-  const [sendModalOpen, setSendModalOpen] = useState(false)
+function mapSend(s: EmailSend): TransactionalSend {
+  return {
+    id: s.sendId, recipient: s.recipientEmail, recipientName: s.recipientEmail.split("@")[0],
+    subject: s.subject, fromEmail: s.senderEmail, fromName: "", replyTo: "",
+    status: s.status, tags: s.tags, providerMessageId: s.providerMessageId,
+    failureReason: s.failureReason, idempotencyKey: null, sentAt: null,
+    createdAt: s.createdAt, updatedAt: s.updatedAt,
+  }
+}
+
+function mapTemplate(t: EmailTemplate): LocalEmailTemplate {
+  return {
+    id: t.id, name: t.name, subject: t.subject, htmlBody: t.htmlBody, plainText: t.textBody,
+    variables: Object.entries(t.variables || {}).map(([name]) => ({ name, type: "string" as const })),
+    status: t.status, version: t.version, createdAt: t.createdAt, updatedAt: t.updatedAt,
+  }
+}
+
+export default function TransactionalView({ workspaceId: propWorkspaceId }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const workspaceId = propWorkspaceId ?? ""
+  const [tab, setTab] = useState<Tab>((searchParams.get("tab") as Tab) ?? "sends")
+
+  const [sends, setSends] = useState<TransactionalSend[]>([])
+  const [sendsTotal, setSendsTotal] = useState(0)
+  const [sendsLoading, setSendsLoading] = useState(true)
   const [recipientFilter, setRecipientFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
 
-  // Templates state
-  const [templates, setTemplates] = useState<EmailTemplate[]>(initialTemplates)
-  const [templateFormOpen, setTemplateFormOpen] = useState(false)
-  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null)
+  const [templates, setTemplates] = useState<LocalEmailTemplate[]>([])
+  const [templatesTotal, setTemplatesTotal] = useState(0)
+  const [templatesLoading, setTemplatesLoading] = useState(true)
   const [tplSearch, setTplSearch] = useState("")
   const [tplStatus, setTplStatus] = useState("all")
   const [latestOnly, setLatestOnly] = useState(true)
 
-  // Filtered sends
+  const loadSends = useCallback(async () => {
+    if (!workspaceId) return
+    setSendsLoading(true)
+    try {
+      const res = await transactionalService.getSends(workspaceId, {
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        recipient: recipientFilter || undefined,
+        fromDate: dateFrom || undefined,
+        toDate: dateTo || undefined,
+        pageSize: 100,
+      })
+      setSends(res.items.map(mapSend))
+      setSendsTotal(res.total)
+    } catch (err) { console.error(err) }
+    finally { setSendsLoading(false) }
+  }, [workspaceId, statusFilter, recipientFilter, dateFrom, dateTo])
+
+  const loadTemplates = useCallback(async () => {
+    if (!workspaceId) return
+    setTemplatesLoading(true)
+    try {
+      const res = await transactionalService.getTemplates(workspaceId, {
+        status: tplStatus !== "all" ? tplStatus : undefined,
+        search: tplSearch || undefined,
+        latestOnly,
+        pageSize: 100,
+      })
+      setTemplates(res.items.map(mapTemplate))
+      setTemplatesTotal(res.total)
+    } catch (err) { console.error(err) }
+    finally { setTemplatesLoading(false) }
+  }, [workspaceId, tplStatus, tplSearch, latestOnly])
+
+  useEffect(() => { loadSends() }, [loadSends])
+  useEffect(() => { loadTemplates() }, [loadTemplates])
+
+  // Auto-refresh every 5s while any send is queued or sending
+  useEffect(() => {
+    const hasPending = sends.some((s) => s.status === "queued" || s.status === "sending")
+    if (!hasPending) return
+    const id = setInterval(loadSends, 30000)
+    return () => clearInterval(id)
+  }, [sends, loadSends])
+
   const filteredSends = useMemo(() => sends.filter((s) => {
     if (recipientFilter && !s.recipient.toLowerCase().includes(recipientFilter.toLowerCase())) return false
     if (statusFilter !== "all" && s.status !== statusFilter) return false
@@ -46,7 +105,6 @@ export default function TransactionalView() {
     return true
   }), [sends, recipientFilter, statusFilter, dateFrom, dateTo])
 
-  // Filtered templates
   const filteredTemplates = useMemo(() => {
     let list = templates
     if (tplSearch) list = list.filter((t) => t.name.toLowerCase().includes(tplSearch.toLowerCase()))
@@ -58,105 +116,50 @@ export default function TransactionalView() {
     return list
   }, [templates, tplSearch, tplStatus, latestOnly])
 
-  const handleSend = (data: SendFormData) => {
-    const newSend: TransactionalSend = {
-      id: `snd-${Date.now()}`,
-      recipient: data.recipient ?? "",
-      recipientName: data.recipient?.split("@")[0] ?? "",
-      subject: data.subject ?? "",
-      fromEmail: data.fromEmail ?? VERIFIED_DOMAINS[0],
-      fromName: data.fromName ?? "",
-      replyTo: data.replyTo ?? "",
-      status: "queued",
-      tags: data.tags ?? {},
-      providerMessageId: null,
-      failureReason: null,
-      idempotencyKey: data.idempotencyKey ?? null,
-      sentAt: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    setSends((prev) => [newSend, ...prev])
+  const handlePublishTemplate = async (t: LocalEmailTemplate) => {
+    try { await transactionalService.updateTemplate(workspaceId, t.id, { publish: true }); loadTemplates() }
+    catch (err) { console.error(err) }
   }
 
-  const handleTemplateSave = (data: Partial<EmailTemplate> & { publishNow: boolean }) => {
-    if (editingTemplate) {
-      if (editingTemplate.status === "published") {
-        // Create new draft version
-        const newVersion: EmailTemplate = {
-          ...editingTemplate, ...data,
-          id: `tpl-${Date.now()}`,
-          status: data.publishNow ? "published" : "draft",
-          version: editingTemplate.version + 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        setTemplates((prev) => [newVersion, ...prev])
-      } else {
-        setTemplates((prev) => prev.map((t) => t.id === editingTemplate.id
-          ? { ...t, ...data, status: data.publishNow ? "published" : t.status, updatedAt: new Date().toISOString() }
-          : t))
-      }
-    } else {
-      const newTpl: EmailTemplate = {
-        id: `tpl-${Date.now()}`,
-        name: data.name ?? "Untitled",
-        subject: data.subject ?? "",
-        htmlBody: data.htmlBody ?? "",
-        plainText: data.plainText ?? "",
-        variables: data.variables ?? [],
-        status: data.publishNow ? "published" : "draft",
-        version: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setTemplates((prev) => [newTpl, ...prev])
-    }
-    setEditingTemplate(null)
-  }
-
-  const handlePublishTemplate = (t: EmailTemplate) =>
-    setTemplates((prev) => prev.map((x) => x.id === t.id ? { ...x, status: "published", updatedAt: new Date().toISOString() } : x))
-
-  const handleDeleteTemplate = (t: EmailTemplate) => {
+  const handleDeleteTemplate = async (t: LocalEmailTemplate) => {
     if (!window.confirm(`Archive template "${t.name}"?`)) return
-    setTemplates((prev) => prev.map((x) => x.id === t.id ? { ...x, status: "archived" } : x))
+    try { await transactionalService.deleteTemplate(workspaceId, t.id); loadTemplates() }
+    catch (err) { console.error(err) }
   }
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          {propWorkspaceId && (
+            <button onClick={() => router.push("/transactional")} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+              <ArrowLeft className="w-3 h-3" /> All Workspaces
+            </button>
+          )}
           <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Developer API</span>
           <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">Transactional Emails</h1>
         </div>
         {tab === "sends" ? (
-          <button onClick={() => setSendModalOpen(true)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
+          <button onClick={() => router.push(`/transactional/${workspaceId}/send`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
             <Plus className="w-4 h-4" /> Send Email
           </button>
         ) : (
-          <button onClick={() => { setEditingTemplate(null); setTemplateFormOpen(true) }} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
+          <button onClick={() => router.push(`/transactional/${workspaceId}/template`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
             <Plus className="w-4 h-4" /> Create Template
           </button>
         )}
       </div>
 
-      {/* Tab nav */}
       <div className="flex bg-[#12141A] p-1 rounded-xl border border-[#1E222D] w-fit">
         {(["sends", "templates"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`px-5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 capitalize cursor-pointer ${tab === t ? "bg-[#252833] text-white shadow-md shadow-black/20" : "text-[#767E8C] hover:text-white"}`}>
-            {t}
-            <span className="ml-1.5 text-[9px] font-mono opacity-60">
-              {t === "sends" ? sends.length : templates.filter((x) => x.status !== "archived").length}
-            </span>
+            {t}<span className="ml-1.5 text-[9px] font-mono opacity-60">{t === "sends" ? sendsTotal : templatesTotal}</span>
           </button>
         ))}
       </div>
 
       {tab === "sends" && (
         <>
-          {/* Sends filters */}
           <div className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8499]" />
@@ -174,7 +177,6 @@ export default function TransactionalView() {
             )}
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {(["queued", "sending", "sent", "failed", "bounced"] as const).map((s) => (
               <div key={s} className="p-3.5 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
@@ -184,14 +186,19 @@ export default function TransactionalView() {
             ))}
           </div>
 
-          <SendsTable sends={filteredSends} onView={setSelectedSend} />
-          {filteredSends.length > 0 && <p className="text-[10px] font-mono text-[#7A8499] px-1">Showing {filteredSends.length} of {sends.length} sends</p>}
+          {sendsLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
+          ) : (
+            <>
+              <SendsTable sends={filteredSends} onView={(s) => router.push(`/transactional/${workspaceId}/details/${s.id}`)} />
+              {filteredSends.length > 0 && <p className="text-[10px] font-mono text-[#7A8499] px-1">Showing {filteredSends.length} of {sendsTotal} sends</p>}
+            </>
+          )}
         </>
       )}
 
       {tab === "templates" && (
         <>
-          {/* Templates filters */}
           <div className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8499]" />
@@ -207,7 +214,6 @@ export default function TransactionalView() {
             </label>
           </div>
 
-          {/* Template stats */}
           <div className="grid grid-cols-3 gap-3">
             {(["draft", "published", "archived"] as const).map((s) => (
               <div key={s} className="p-3.5 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
@@ -217,20 +223,19 @@ export default function TransactionalView() {
             ))}
           </div>
 
-          <TemplatesTable
-            templates={filteredTemplates}
-            onView={(t) => { setEditingTemplate(t); setTemplateFormOpen(true) }}
-            onEdit={(t) => { setEditingTemplate(t); setTemplateFormOpen(true) }}
-            onPublish={handlePublishTemplate}
-            onDelete={handleDeleteTemplate}
-          />
+          {templatesLoading ? (
+            <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
+          ) : (
+            <TemplatesTable
+              templates={filteredTemplates}
+              onView={(t) => router.push(`/transactional/${workspaceId}/template?edit=${t.id}`)}
+              onEdit={(t) => router.push(`/transactional/${workspaceId}/template?edit=${t.id}`)}
+              onPublish={handlePublishTemplate}
+              onDelete={handleDeleteTemplate}
+            />
+          )}
         </>
       )}
-
-      {/* Modals */}
-      {selectedSend && <SendDetailPanel send={selectedSend} onClose={() => setSelectedSend(null)} />}
-      <SendEmailModal isOpen={sendModalOpen} onClose={() => setSendModalOpen(false)} templates={templates} onSend={handleSend} />
-      <TemplateFormModal isOpen={templateFormOpen} onClose={() => { setTemplateFormOpen(false); setEditingTemplate(null) }} template={editingTemplate} onSave={handleTemplateSave} />
     </motion.div>
   )
 }

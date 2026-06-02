@@ -1,26 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { initialSegments, Segment, mockContactPreviews } from "@/lib/segments-data"
-import { Plus, Filter } from "lucide-react"
+import { Segment } from "@/lib/segments-data"
+import { segmentsService } from "@/lib/segments-service"
+import { useAuth } from "@/lib/auth-context"
+import { Plus, Loader2, ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
 import SegmentsTable from "./segments-table"
 import SegmentFormModal from "./segment-form-modal"
 import SegmentDetailView from "./segment-detail-view"
 
-export default function SegmentsView() {
-  const [segments, setSegments] = useState<Segment[]>(initialSegments)
+interface Props {
+  workspaceId?: string
+}
+
+export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [workspaceId, setWorkspaceId] = useState<string>("")
+  const [segments, setSegments] = useState<Segment[]>([])
+  const [total, setTotal] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   const [view, setView] = useState<"list" | "detail">("list")
   const [selectedSegment, setSelectedSegment] = useState<Segment | null>(null)
+  const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; email: string; firstName: string; lastName: string; lifecycleStage: string }>>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null)
   const [filterType, setFilterType] = useState<"all" | "static" | "dynamic">("all")
 
   const filtered = segments.filter((s) => filterType === "all" || s.type === filterType)
 
-  const handleView = (s: Segment) => {
+  const loadSegments = useCallback(async (wsId: string) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const res = await segmentsService.listSegments(wsId, { pageSize: 100 })
+      setSegments(res.items)
+      setTotal(res.total)
+    } catch (err: any) {
+      setError(err.message || "Failed to load segments")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (propWorkspaceId) {
+      setWorkspaceId(propWorkspaceId)
+      loadSegments(propWorkspaceId)
+    } else if (user?.workspaces?.[0]) {
+      const wsId = user.workspaces[0].id
+      setWorkspaceId(wsId)
+      loadSegments(wsId)
+    }
+  }, [user, propWorkspaceId, loadSegments])
+
+  const handleView = async (s: Segment) => {
     setSelectedSegment(s)
     setView("detail")
+    setPreviewContacts([])
+    if (s.status === "ready") {
+      try {
+        const res = await segmentsService.previewSegment(workspaceId, s.id)
+        setPreviewContacts(res.contacts)
+      } catch {
+        // preview is best-effort
+      }
+    }
   }
 
   const handleEdit = (s: Segment) => {
@@ -28,56 +77,54 @@ export default function SegmentsView() {
     setIsModalOpen(true)
   }
 
-  const handleRefresh = (s: Segment) => {
+  const handleRefresh = async (s: Segment) => {
     setSegments((prev) =>
-      prev.map((seg) =>
-        seg.id === s.id ? { ...seg, status: "computing" as const } : seg
-      )
+      prev.map((seg) => seg.id === s.id ? { ...seg, status: "computing" as const } : seg)
     )
-    // Simulate async completion
-    setTimeout(() => {
+    if (selectedSegment?.id === s.id) {
+      setSelectedSegment((prev) => prev ? { ...prev, status: "computing" as const } : prev)
+    }
+    try {
+      await segmentsService.refreshSegment(workspaceId, s.id)
+    } catch {
       setSegments((prev) =>
-        prev.map((seg) =>
-          seg.id === s.id
-            ? { ...seg, status: "ready" as const, lastComputed: new Date().toISOString() }
-            : seg
-        )
+        prev.map((seg) => seg.id === s.id ? { ...seg, status: s.status } : seg)
       )
-    }, 2500)
+    }
   }
 
-  const handleDelete = (s: Segment) => {
+  const handleDelete = async (s: Segment) => {
     if (!window.confirm(`Delete segment "${s.name}"? This action cannot be undone.`)) return
-    setSegments((prev) => prev.filter((seg) => seg.id !== s.id))
-    if (view === "detail") setView("list")
+    try {
+      await segmentsService.deleteSegment(workspaceId, s.id)
+      setSegments((prev) => prev.filter((seg) => seg.id !== s.id))
+      setTotal((t) => t - 1)
+      if (view === "detail") setView("list")
+    } catch (err: any) {
+      alert(err.message || "Failed to delete segment")
+    }
   }
 
-  const handleSave = (data: Partial<Segment>) => {
-    if (editingSegment) {
-      setSegments((prev) =>
-        prev.map((s) =>
-          s.id === editingSegment.id
-            ? { ...s, ...data, updatedAt: new Date().toISOString() }
-            : s
-        )
-      )
-      if (selectedSegment?.id === editingSegment.id) {
-        setSelectedSegment((prev) => prev ? { ...prev, ...data } : prev)
+  const handleSave = async (data: Partial<Segment>) => {
+    try {
+      if (editingSegment) {
+        const updated = await segmentsService.updateSegment(workspaceId, editingSegment.id, {
+          name: data.name,
+          filterTree: data.filterTree,
+        })
+        setSegments((prev) => prev.map((s) => s.id === editingSegment.id ? updated : s))
+        if (selectedSegment?.id === editingSegment.id) setSelectedSegment(updated)
+      } else {
+        const created = await segmentsService.createSegment(workspaceId, {
+          name: data.name ?? "Untitled",
+          type: data.type ?? "dynamic",
+          filterTree: data.filterTree,
+        })
+        setSegments((prev) => [created, ...prev])
+        setTotal((t) => t + 1)
       }
-    } else {
-      const newSeg: Segment = {
-        id: `seg-${Date.now()}`,
-        name: data.name ?? "Untitled",
-        type: data.type ?? "dynamic",
-        status: data.type === "dynamic" ? "pending" : "ready",
-        contactCount: 0,
-        filterTree: data.filterTree,
-        lastComputed: null,
-        createdAt: new Date().toISOString(),
-        createdBy: "admin@engageiq.com",
-        updatedAt: new Date().toISOString(),
-      }
-      setSegments((prev) => [newSeg, ...prev])
+    } catch (err: any) {
+      alert(err.message || "Failed to save segment")
     }
     setEditingSegment(null)
   }
@@ -92,7 +139,7 @@ export default function SegmentsView() {
       >
         <SegmentDetailView
           segment={selectedSegment}
-          contacts={selectedSegment.status === "ready" ? mockContactPreviews : []}
+          contacts={previewContacts}
           onBack={() => setView("list")}
           onEdit={handleEdit}
           onRefresh={handleRefresh}
@@ -118,18 +165,25 @@ export default function SegmentsView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          {propWorkspaceId && (
+            <button
+              onClick={() => router.push("/segments")}
+              className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer"
+            >
+              <ArrowLeft className="w-3 h-3" /> All Workspaces
+            </button>
+          )}
           <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Audience Builder</span>
           <div className="flex items-center gap-3 mt-1.5">
             <h1 className="text-3xl font-extrabold tracking-tight text-white/95 leading-none">Segments</h1>
             <div className="flex items-baseline gap-1 bg-[#111319] border border-[#1E2230] px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-[#6B7280]">
-              <span>{segments.length}</span>
+              <span>{total}</span>
               <span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Type filter */}
           <div className="flex bg-[#12141A] p-1 rounded-xl border border-[#1E222D]">
             {(["all", "dynamic", "static"] as const).map((t) => (
               <button
@@ -171,24 +225,38 @@ export default function SegmentsView() {
         ))}
       </div>
 
-      {/* Table */}
-      <SegmentsTable
-        segments={filtered}
-        onView={handleView}
-        onEdit={handleEdit}
-        onRefresh={handleRefresh}
-        onDelete={handleDelete}
-      />
+      {/* Loading / Error / Table */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" />
+        </div>
+      ) : error ? (
+        <div className="p-8 rounded-3xl bg-[#0F1016]/95 border border-red-500/30 text-center">
+          <p className="text-sm text-red-400">{error}</p>
+          <button
+            onClick={() => loadSegments(workspaceId)}
+            className="mt-3 text-xs text-[#6B7280] underline hover:text-white cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      ) : (
+        <SegmentsTable
+          segments={filtered}
+          onView={handleView}
+          onEdit={handleEdit}
+          onRefresh={handleRefresh}
+          onDelete={handleDelete}
+        />
+      )}
 
-      {/* Pagination hint */}
-      {filtered.length > 0 && (
+      {!isLoading && !error && filtered.length > 0 && (
         <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8499] px-1">
           <span>Showing {filtered.length} of {segments.length} segments</span>
           <span>Page 1 of 1</span>
         </div>
       )}
 
-      {/* Modal */}
       <SegmentFormModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingSegment(null) }}
