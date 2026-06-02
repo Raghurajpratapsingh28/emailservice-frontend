@@ -140,10 +140,16 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
         <SegmentDetailView
           segment={selectedSegment}
           contacts={previewContacts}
+          workspaceId={workspaceId}
           onBack={() => setView("list")}
           onEdit={handleEdit}
           onRefresh={handleRefresh}
           onDelete={handleDelete}
+          onContactsChanged={(updatedContacts, delta) => {
+            setPreviewContacts(updatedContacts)
+            setSelectedSegment((prev) => prev ? { ...prev, contactCount: prev.contactCount + delta } : prev)
+            setSegments((prev) => prev.map((s) => s.id === selectedSegment.id ? { ...s, contactCount: s.contactCount + delta } : s))
+          }}
         />
         <SegmentFormModal
           isOpen={isModalOpen}

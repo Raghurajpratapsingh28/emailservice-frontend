@@ -32,8 +32,8 @@ function fromApiFilterTree(tree: ApiFilterGroup, depth = 0): FilterTree {
   return {
     id: `g-${depth}-${Math.random().toString(36).slice(2, 6)}`,
     type: 'group',
-    operator: tree.operator,
-    children: tree.rules.map((rule, i) => {
+    operator: tree.operator ?? 'AND',
+    children: (tree.rules ?? []).map((rule, i) => {
       if ('rules' in rule) {
         return fromApiFilterTree(rule as ApiFilterGroup, depth + 1);
       }
@@ -71,7 +71,7 @@ function toFrontendSegment(s: ApiSegment): Segment {
     type: s.type,
     status: s.status,
     contactCount: s.contactCount,
-    filterTree: s.filterTree ? fromApiFilterTree(s.filterTree) : undefined,
+    filterTree: s.filterTree?.rules ? fromApiFilterTree(s.filterTree) : undefined,
     lastComputed: s.lastComputed,
     createdAt: s.createdAt,
     createdBy: s.createdBy,
@@ -136,6 +136,21 @@ export const segmentsService = {
     await apiClient.delete(`/segments/${segmentId}`, {
       headers: { 'x-workspace-id': workspaceId },
     });
+  },
+
+  async addContactToSegment(workspaceId: string, segmentId: string, contactId: string): Promise<void> {
+    await apiClient.post(
+      `/segments/${segmentId}/contacts`,
+      { contactId },
+      { headers: { 'x-workspace-id': workspaceId } }
+    );
+  },
+
+  async removeContactFromSegment(workspaceId: string, segmentId: string, contactId: string): Promise<void> {
+    await apiClient.delete(
+      `/segments/${segmentId}/contacts/${contactId}`,
+      { headers: { 'x-workspace-id': workspaceId } }
+    );
   },
 
   async refreshSegment(workspaceId: string, segmentId: string): Promise<{ queued: boolean }> {

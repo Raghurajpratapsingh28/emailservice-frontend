@@ -3,10 +3,17 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { ArrowLeft, Pencil, Calendar, Send, Pause, Play, Trash2, Users, Mail, Clock, AlertCircle, Loader2, X } from "lucide-react"
+import { ArrowLeft, Pencil, Calendar, Send, Pause, Play, Trash2, Users, Mail, Clock, AlertCircle, Loader2, X, CheckCircle, XCircle } from "lucide-react"
 import CampaignStatusBadge from "./campaign-status-badge"
+import SendNowDialog from "./send-now-dialog"
 import { campaignsService } from "@/lib/campaigns-service"
 import type { Campaign } from "@/lib/campaigns-data"
+
+// Returns a datetime-local string in the browser's local timezone (YYYY-MM-DDTHH:mm)
+function toLocalDatetimeString(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 interface Props { workspaceId: string; campaignId: string }
 
@@ -15,8 +22,9 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [scheduleOpen, setScheduleOpen] = useState(false)
-  const [scheduleTime, setScheduleTime] = useState(new Date(Date.now() + 86400000).toISOString().slice(0, 16))
+  const [scheduleTime, setScheduleTime] = useState(() => toLocalDatetimeString(new Date(Date.now() + 86400000)))
   const [scheduleError, setScheduleError] = useState("")
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
 
   useEffect(() => {
     campaignsService.get(workspaceId, campaignId)
@@ -37,8 +45,8 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
     if (!campaign || !window.confirm(`Delete "${campaign.name}"?`)) return
     try { await campaignsService.delete(workspaceId, campaignId); router.push(`/campaigns/${workspaceId}`) } catch (e: any) { alert(e.message) }
   }
-  const handleSendNow = async () => {
-    if (!campaign || !window.confirm(`Send "${campaign.name}" to ${campaign.recipientCount.toLocaleString()} contacts now?`)) return
+  const handleSendNow = () => setSendDialogOpen(true)
+  const handleSendConfirm = async () => {
     try { await campaignsService.send(workspaceId, campaignId); refresh() } catch (e: any) { alert(e.message) }
   }
   const handleScheduleConfirm = async () => {
@@ -55,6 +63,7 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
+      <SendNowDialog campaign={sendDialogOpen ? campaign : null} onClose={() => setSendDialogOpen(false)} onConfirm={handleSendConfirm} />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <button onClick={() => router.push(`/campaigns/${workspaceId}`)} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
@@ -69,10 +78,8 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
 
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {canEdit && <Btn onClick={() => router.push(`/campaigns/${workspaceId}/edit/${c.id}`)} color="text-[#9CA3AF]" border="border-[#6B7280]/25 hover:border-[#6B7280]/50"><Pencil className="w-3.5 h-3.5" /> Edit</Btn>}
-          {c.status === "draft" && <>
-            <Btn onClick={() => setScheduleOpen(true)} color="text-blue-400" border="border-blue-500/25 hover:border-blue-500/50"><Calendar className="w-3.5 h-3.5" /> Schedule</Btn>
-            <Btn onClick={handleSendNow} color="text-[#FE8A5C]" border="border-[#FE8A5C]/25 hover:border-[#FE8A5C]/50"><Send className="w-3.5 h-3.5" /> Send Now</Btn>
-          </>}
+          {["draft", "scheduled"].includes(c.status) && <Btn onClick={() => setScheduleOpen(true)} color="text-blue-400" border="border-blue-500/25 hover:border-blue-500/50"><Calendar className="w-3.5 h-3.5" /> {c.status === "scheduled" ? "Reschedule" : "Schedule"}</Btn>}
+          {["draft", "paused"].includes(c.status) && <Btn onClick={handleSendNow} color="text-[#FE8A5C]" border="border-[#FE8A5C]/25 hover:border-[#FE8A5C]/50"><Send className="w-3.5 h-3.5" /> Send Now</Btn>}
           {["scheduled", "sending"].includes(c.status) && <Btn onClick={handlePause} color="text-amber-400" border="border-amber-500/25 hover:border-amber-500/50"><Pause className="w-3.5 h-3.5" /> Pause</Btn>}
           {c.status === "paused" && <Btn onClick={handleResume} color="text-emerald-400" border="border-emerald-500/25 hover:border-emerald-500/50"><Play className="w-3.5 h-3.5" /> Resume</Btn>}
           {["draft", "scheduled", "paused", "failed"].includes(c.status) && <Btn onClick={handleDelete} color="text-red-400" border="border-red-500/25 hover:border-red-500/50"><Trash2 className="w-3.5 h-3.5" /> Delete</Btn>}
@@ -89,19 +96,32 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <InfoCard icon={<Users className="w-4 h-4 text-[#6B7280]" />} label="Recipients">
           <p className="text-sm font-bold font-mono text-white">{c.recipientCount > 0 ? c.recipientCount.toLocaleString() : "—"}</p>
-          <p className="text-[10px] text-[#B0B8C8] mt-0.5">{c.segmentName}</p>
+          <p className="text-[10px] text-[#B0B8C8] mt-0.5 truncate">{c.segmentName || "No segment"}</p>
         </InfoCard>
-        <InfoCard icon={<Mail className="w-4 h-4 text-[#FE8A5C]" />} label="Sender">
-          <p className="text-xs font-semibold text-white/90">{c.fromName}</p>
-          <p className="text-[10px] text-[#B0B8C8] font-mono mt-0.5">{c.fromEmail}</p>
+        <InfoCard icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} label="Sent">
+          <p className="text-sm font-bold font-mono text-emerald-400">{c.sentCount > 0 ? c.sentCount.toLocaleString() : "—"}</p>
+          <p className="text-[10px] text-[#B0B8C8] mt-0.5">delivered</p>
+        </InfoCard>
+        <InfoCard icon={<XCircle className="w-4 h-4 text-red-400" />} label="Failed">
+          <p className="text-sm font-bold font-mono text-red-400">{c.failedCount > 0 ? c.failedCount.toLocaleString() : "—"}</p>
+          <p className="text-[10px] text-[#B0B8C8] mt-0.5">bounced / failed</p>
         </InfoCard>
         <InfoCard icon={<Clock className="w-4 h-4 text-blue-400" />} label="Schedule">
           {c.sentAt ? <p className="text-xs font-mono text-emerald-400">Sent {new Date(c.sentAt).toLocaleString()}</p>
             : c.scheduledAt ? <p className="text-xs font-mono text-blue-400">{new Date(c.scheduledAt).toLocaleString()}</p>
             : <p className="text-xs text-[#7A8499] font-mono">Not scheduled</p>}
+        </InfoCard>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <InfoCard icon={<Mail className="w-4 h-4 text-[#FE8A5C]" />} label="Sender">
+          <p className="text-xs font-semibold text-white/90">{c.fromName || "—"}</p>
+          <p className="text-[10px] text-[#B0B8C8] font-mono mt-0.5">{c.fromEmail || "—"}</p>
+        </InfoCard>
+        <InfoCard icon={<Mail className="w-4 h-4 text-[#6B7280]" />} label="Reply To">
+          <p className="text-xs font-mono text-white/80">{c.replyTo || c.fromEmail || "—"}</p>
         </InfoCard>
       </div>
 
@@ -130,7 +150,7 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
               <button onClick={() => setScheduleOpen(false)} className="p-2 rounded-xl hover:bg-[#1C1F2D] text-[#7A8499] hover:text-white transition-all cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <div className="px-6 py-5 space-y-4">
-              <input type="datetime-local" value={scheduleTime} min={new Date().toISOString().slice(0, 16)} onChange={(e) => { setScheduleTime(e.target.value); setScheduleError("") }} className="w-full px-3.5 py-2.5 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white font-mono focus:outline-none transition-colors cursor-pointer" />
+              <input type="datetime-local" value={scheduleTime} min={toLocalDatetimeString(new Date())} onChange={(e) => { setScheduleTime(e.target.value); setScheduleError("") }} className="w-full px-3.5 py-2.5 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white font-mono focus:outline-none transition-colors cursor-pointer" />
               {scheduleError && <p className="text-[10px] text-red-400 font-mono">{scheduleError}</p>}
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#1C202C]">

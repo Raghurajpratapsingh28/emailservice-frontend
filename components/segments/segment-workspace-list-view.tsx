@@ -14,7 +14,7 @@ export default function SegmentWorkspaceListView() {
 
   useEffect(() => {
     workspaceService.getWorkspaces()
-      .then((res) => setWorkspaces(res.items))
+      .then((res) => setWorkspaces(res?.items ?? []))
       .catch((err) => console.error("Failed to load workspaces:", err))
       .finally(() => setIsLoading(false))
   }, [])

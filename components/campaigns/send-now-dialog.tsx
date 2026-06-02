@@ -1,7 +1,7 @@
 "use client"
 
-import { Campaign, VERIFIED_DOMAINS } from "@/lib/campaigns-data"
-import { X, AlertCircle, Send } from "lucide-react"
+import { Campaign } from "@/lib/campaigns-data"
+import { X, AlertCircle, Send, Users, Mail } from "lucide-react"
 
 interface Props {
   campaign: Campaign | null
@@ -12,12 +12,11 @@ interface Props {
 export default function SendNowDialog({ campaign, onClose, onConfirm }: Props) {
   if (!campaign) return null
 
-  const errors: string[] = []
-  if (!VERIFIED_DOMAINS.includes(campaign.fromEmail)) errors.push("Sender domain is not verified.")
-  if (campaign.segmentId && campaign.recipientCount === 0) errors.push("Segment has 0 contacts.")
-  if (!campaign.htmlBody.trim()) errors.push("Campaign body is empty.")
-
-  const canSend = errors.length === 0
+  const warnings: string[] = []
+  if (!campaign.segmentId) warnings.push("No segment selected — campaign will have 0 recipients.")
+  if (!campaign.htmlBody?.trim()) warnings.push("Campaign HTML body is empty.")
+  if (!campaign.subject?.trim()) warnings.push("Subject line is empty.")
+  if (!campaign.fromEmail?.trim()) warnings.push("Sender email is not set.")
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -34,32 +33,34 @@ export default function SendNowDialog({ campaign, onClose, onConfirm }: Props) {
           <div>
             <h2 className="text-sm font-bold text-white">Send "{campaign.name}" now?</h2>
             <p className="text-xs text-[#B0B8C8] mt-1 leading-relaxed">
-              This will immediately send to{" "}
-              <span className="font-mono font-semibold text-white/80">{campaign.recipientCount.toLocaleString()} contacts</span>
-              {" "}in segment{" "}
-              <span className="text-[#9CA3AF] font-semibold">{campaign.segmentName}</span>.
+              This will immediately queue the campaign for delivery. This action cannot be undone.
             </p>
           </div>
 
-          {/* Details */}
           <div className="p-3.5 rounded-2xl bg-[#08090C] border border-[#1E2230] space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-[#7A8499] font-mono">From</span>
-              <span className="text-white/80 font-mono">{campaign.fromEmail}</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-[#7A8499] font-mono"><Users className="w-3 h-3" /> Recipients</span>
+              <span className="text-white/80 font-mono font-semibold">
+                {campaign.recipientCount > 0 ? campaign.recipientCount.toLocaleString() : "—"}
+                {campaign.segmentName && <span className="text-[#6B7280] font-normal"> · {campaign.segmentName}</span>}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#7A8499] font-mono">Subject</span>
-              <span className="text-white/80 truncate max-w-[180px]">{campaign.subject}</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-[#7A8499] font-mono"><Mail className="w-3 h-3" /> From</span>
+              <span className="text-white/80 font-mono">{campaign.fromEmail || "—"}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-[#7A8499] font-mono shrink-0">Subject</span>
+              <span className="text-white/80 truncate max-w-[180px] text-right">{campaign.subject || "—"}</span>
             </div>
           </div>
 
-          {/* Validation errors */}
-          {errors.length > 0 && (
-            <div className="p-3.5 rounded-2xl bg-red-500/5 border border-red-500/20 space-y-1.5">
-              {errors.map((e) => (
-                <div key={e} className="flex items-start gap-2 text-xs text-red-400">
+          {warnings.length > 0 && (
+            <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-1.5">
+              {warnings.map((w) => (
+                <div key={w} className="flex items-start gap-2 text-xs text-amber-400">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  <span>{e}</span>
+                  <span>{w}</span>
                 </div>
               ))}
             </div>
@@ -72,8 +73,7 @@ export default function SendNowDialog({ campaign, onClose, onConfirm }: Props) {
           </button>
           <button
             onClick={() => { onConfirm(campaign); onClose() }}
-            disabled={!canSend}
-            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#FE8A5C] to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold shadow-lg shadow-orange-500/15 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#FE8A5C] to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl text-xs font-semibold shadow-lg shadow-orange-500/15 transition-all cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" /> Send Now
           </button>

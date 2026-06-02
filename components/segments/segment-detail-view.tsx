@@ -1,20 +1,59 @@
 "use client"
 
+import { useState } from "react"
 import { Segment, ContactPreview, formatRelative } from "@/lib/segments-data"
 import { SegmentStatusBadge, SegmentTypeBadge } from "./segment-status-badge"
 import FilterBuilder from "./filter-builder"
-import { ArrowLeft, RefreshCw, Pencil, Trash2, Users } from "lucide-react"
+import AddContactModal from "./add-contact-modal"
+import { segmentsService } from "@/lib/segments-service"
+import { type Contact } from "@/lib/contacts-service"
+import { ArrowLeft, RefreshCw, Pencil, Trash2, Users, UserPlus, X } from "lucide-react"
 
 interface Props {
   segment: Segment
   contacts: ContactPreview[]
+  workspaceId: string
   onBack: () => void
   onEdit: (s: Segment) => void
   onRefresh: (s: Segment) => void
   onDelete: (s: Segment) => void
+  onContactsChanged: (contacts: ContactPreview[], countDelta: number) => void
 }
 
-export default function SegmentDetailView({ segment, contacts, onBack, onEdit, onRefresh, onDelete }: Props) {
+export default function SegmentDetailView({ segment, contacts, workspaceId, onBack, onEdit, onRefresh, onDelete, onContactsChanged }: Props) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [removingId, setRemovingId] = useState<string | null>(null)
+
+  const existingIds = new Set(contacts.map((c) => c.id))
+
+  const handleAddContact = async (contact: Contact) => {
+    try {
+      await segmentsService.addContactToSegment(workspaceId, segment.id, contact.id)
+      const newContact: ContactPreview = {
+        id: contact.id,
+        email: contact.email,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        lifecycleStage: contact.lifecycleStage,
+      }
+      onContactsChanged([...contacts, newContact], 1)
+    } catch (err: any) {
+      alert(err.message || "Failed to add contact")
+    }
+  }
+
+  const handleRemoveContact = async (contactId: string) => {
+    setRemovingId(contactId)
+    try {
+      await segmentsService.removeContactFromSegment(workspaceId, segment.id, contactId)
+      onContactsChanged(contacts.filter((c) => c.id !== contactId), -1)
+    } catch (err: any) {
+      alert(err.message || "Failed to remove contact")
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -44,6 +83,14 @@ export default function SegmentDetailView({ segment, contacts, onBack, onEdit, o
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {segment.type === "static" && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#111319] hover:bg-[#1C1F2D] border border-[#1E2230] hover:border-[#383E58] rounded-xl text-xs font-semibold text-[#B0B8C8] hover:text-white transition-all cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-emerald-400" /> Add Contact
+            </button>
+          )}
           <button
             onClick={() => onRefresh(segment)}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-[#111319] hover:bg-[#1C1F2D] border border-[#1E2230] hover:border-[#383E58] rounded-xl text-xs font-semibold text-[#B0B8C8] hover:text-white transition-all cursor-pointer"
@@ -80,11 +127,17 @@ export default function SegmentDetailView({ segment, contacts, onBack, onEdit, o
 
           {segment.type === "static" && (
             <div className="p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C]">
-              <h3 className="text-xs font-semibold text-white/80 tracking-tight mb-3">
-                Membership
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-semibold text-white/80 tracking-tight">Membership</h3>
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                >
+                  <UserPlus className="w-3 h-3" /> Add contact
+                </button>
+              </div>
               <p className="text-xs text-[#B0B8C8]">
-                This is a static segment. Contacts are managed manually.
+                Contacts are managed manually. Use the <span className="text-white/70">Add Contact</span> button to add members.
               </p>
             </div>
           )}
@@ -105,8 +158,8 @@ export default function SegmentDetailView({ segment, contacts, onBack, onEdit, o
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-[#1C202C]">
-                      {["Email", "Name", "Lifecycle Stage"].map((col) => (
-                        <th key={col} className="px-4 py-3 text-left text-xs font-semibold text-white/80 tracking-tight">
+                      {["Email", "Name", "Lifecycle Stage", ...(segment.type === "static" ? [""] : [])].map((col, i) => (
+                        <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-white/80 tracking-tight">
                           {col}
                         </th>
                       ))}
@@ -122,6 +175,18 @@ export default function SegmentDetailView({ segment, contacts, onBack, onEdit, o
                             {c.lifecycleStage}
                           </span>
                         </td>
+                        {segment.type === "static" && (
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => handleRemoveContact(c.id)}
+                              disabled={removingId === c.id}
+                              className="p-1.5 rounded-lg hover:bg-red-500/10 text-[#4B5563] hover:text-red-400 transition-colors cursor-pointer disabled:opacity-40"
+                              title="Remove from segment"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -153,6 +218,15 @@ export default function SegmentDetailView({ segment, contacts, onBack, onEdit, o
           </div>
         </div>
       </div>
+
+      <AddContactModal
+        isOpen={isAddModalOpen}
+        workspaceId={workspaceId}
+        segmentId={segment.id}
+        existingContactIds={existingIds}
+        onAdd={handleAddContact}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </div>
   )
 }

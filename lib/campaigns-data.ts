@@ -1,4 +1,4 @@
-export type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "paused" | "failed" | "cancelled"
+export type CampaignStatus = "draft" | "scheduled" | "sending" | "sent" | "paused" | "failed" | "cancelled" | "completed"
 export type CampaignType = "regular"
 
 export type Campaign = {
@@ -14,6 +14,8 @@ export type Campaign = {
   segmentId: string
   segmentName: string
   recipientCount: number
+  sentCount: number
+  failedCount: number
   scheduledAt: string | null
   sentAt: string | null
   htmlBody: string
@@ -45,7 +47,8 @@ export const STATUS_META: Record<CampaignStatus, { label: string; color: string;
   sent:      { label: "Sent",      color: "text-emerald-400",bg: "bg-emerald-500/10",border: "border-emerald-500/25" },
   paused:    { label: "Paused",    color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/25" },
   failed:    { label: "Failed",    color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/25" },
-  cancelled: { label: "Cancelled", color: "text-zinc-600",   bg: "bg-zinc-800/10",   border: "border-zinc-700/25" },
+  cancelled:  { label: "Cancelled",  color: "text-zinc-600",   bg: "bg-zinc-800/10",    border: "border-zinc-700/25" },
+  completed:  { label: "Completed",  color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/25" },
 }
 
 export const initialCampaigns: Campaign[] = [
@@ -62,6 +65,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-001",
     segmentName: "High Value Customers",
     recipientCount: 4800,
+    sentCount: 4750,
+    failedCount: 50,
     scheduledAt: "2026-05-20T10:00:00Z",
     sentAt: "2026-05-20T10:00:00Z",
     htmlBody: "<h1>Q2 Growth Report</h1><p>Here are your key metrics for Q2...</p>",
@@ -82,6 +87,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-005",
     segmentName: "VIP Beta Testers",
     recipientCount: 1200,
+    sentCount: 800,
+    failedCount: 0,
     scheduledAt: null,
     sentAt: null,
     htmlBody: "<h1>Complete Your Setup</h1><p>You're almost there...</p>",
@@ -102,6 +109,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-002",
     segmentName: "Inactive Subscriptions",
     recipientCount: 310,
+    sentCount: 0,
+    failedCount: 0,
     scheduledAt: "2026-05-28T09:00:00Z",
     sentAt: null,
     htmlBody: "<h1>We Miss You!</h1><p>Here's 20% off your next month...</p>",
@@ -122,6 +131,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-001",
     segmentName: "High Value Customers",
     recipientCount: 0,
+    sentCount: 0,
+    failedCount: 0,
     scheduledAt: null,
     sentAt: null,
     htmlBody: "<h1>Black Friday Preview</h1><p>Get ready for our biggest sale...</p>",
@@ -142,6 +153,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-003",
     segmentName: "EU Contacts Only",
     recipientCount: 3500,
+    sentCount: 1200,
+    failedCount: 45,
     scheduledAt: null,
     sentAt: null,
     htmlBody: "<h1>Your Cart is Waiting</h1><p>Complete your purchase today...</p>",
@@ -162,6 +175,8 @@ export const initialCampaigns: Campaign[] = [
     segmentId: "seg-003",
     segmentName: "EU Contacts Only",
     recipientCount: 0,
+    sentCount: 0,
+    failedCount: 0,
     scheduledAt: null,
     sentAt: null,
     htmlBody: "<h1>Privacy Policy Update</h1><p>We've updated our privacy policy...</p>",

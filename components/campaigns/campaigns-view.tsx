@@ -8,6 +8,7 @@ import { campaignsService } from "@/lib/campaigns-service"
 import type { Campaign } from "@/lib/campaigns-data"
 import CampaignsTable from "./campaigns-table"
 import CampaignFilters from "./campaign-filters"
+import SendNowDialog from "./send-now-dialog"
 
 interface Props { workspaceId?: string }
 
@@ -23,6 +24,7 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
   const [page, setPage] = useState(1)
+  const [sendDialogCampaign, setSendDialogCampaign] = useState<Campaign | null>(null)
 
   const load = useCallback(async () => {
     if (!workspaceId) return
@@ -55,8 +57,9 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
     if (!window.confirm(`Delete "${c.name}"?`)) return
     try { await campaignsService.delete(workspaceId, c.id); load() } catch (e: any) { alert(e.message) }
   }
-  const handleSendNow = async (c: Campaign) => {
-    if (!window.confirm(`Send "${c.name}" to ${c.recipientCount.toLocaleString()} contacts now?`)) return
+  const handleSendNow = (c: Campaign) => setSendDialogCampaign(c)
+
+  const handleSendConfirm = async (c: Campaign) => {
     try { await campaignsService.send(workspaceId, c.id); patch(c.id, { status: "sending" }) } catch (e: any) { alert(e.message) }
   }
 
@@ -69,6 +72,7 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
+      <SendNowDialog campaign={sendDialogCampaign} onClose={() => setSendDialogCampaign(null)} onConfirm={handleSendConfirm} />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {propWorkspaceId && (

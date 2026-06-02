@@ -47,6 +47,8 @@ function toFrontend(c: ApiCampaign): Campaign {
     segmentId: c.segmentId ?? '',
     segmentName: c.segmentName ?? '',
     recipientCount: c.recipientCount,
+    sentCount: c.sentCount,
+    failedCount: c.failedCount,
     scheduledAt: c.scheduledAt,
     sentAt: c.completedAt,
     htmlBody: c.htmlBody ?? '',
