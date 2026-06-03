@@ -235,6 +235,7 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
 
       <BulkImport
         isOpen={isImportOpen}
+        workspaceId={workspaceId}
         onClose={() => setIsImportOpen(false)}
         onImportComplete={handleBulkImportComplete}
       />
