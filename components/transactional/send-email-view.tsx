@@ -7,11 +7,13 @@ import { ArrowLeft, Plus, ChevronDown, AlertTriangle, Loader2 } from "lucide-rea
 import { X } from "lucide-react"
 import { transactionalService } from "@/lib/transactional-service"
 import type { EmailTemplate } from "@/lib/transactional-service"
+import { initialTemplates } from "@/lib/transactional-data"
 
 interface Props { workspaceId: string }
 
 export default function SendEmailView({ workspaceId }: Props) {
   const router = useRouter()
+  // Merge API templates with built-ins; built-ins shown as local-only for variable filling
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [recipients, setRecipients] = useState<string[]>([])
   const [recipientInput, setRecipientInput] = useState("")
@@ -31,13 +33,35 @@ export default function SendEmailView({ workspaceId }: Props) {
   const [errors, setErrors] = useState<string[]>([])
   const [isSending, setIsSending] = useState(false)
 
+  // Convert built-ins to the same shape as API templates for the picker
+  const builtinAsApiTemplates: EmailTemplate[] = initialTemplates.map((t) => ({
+    id: t.id,
+    name: `${t.name} ✦`,
+    subject: t.subject,
+    htmlBody: t.htmlBody,
+    textBody: t.plainText,
+    variables: Object.fromEntries(t.variables.map((v) => [v.name, v.type])),
+    status: t.status,
+    version: t.version,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  }))
+
   useEffect(() => {
     transactionalService.getTemplates(workspaceId, { status: "published", pageSize: 100 })
-      .then((res) => setTemplates(res.items))
-      .catch(console.error)
+      .then((res) => {
+        const apiItems = res.items
+        // Remove any built-ins already saved as real templates (matched by name)
+        const apiNames = new Set(apiItems.map((t) => t.name))
+        const filteredBuiltins = builtinAsApiTemplates.filter((t) => !apiNames.has(t.name.replace(" ✦", "")))
+        setTemplates([...apiItems, ...filteredBuiltins])
+      })
+      .catch(() => setTemplates(builtinAsApiTemplates))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 
   const selectedTemplate = templates.find((t) => t.id === templateId)
+  const isBuiltinSelected = templateId ? initialTemplates.some((t) => t.id === templateId) : false
 
   const addRecipient = () => {
     const email = recipientInput.trim()
@@ -51,6 +75,9 @@ export default function SendEmailView({ workspaceId }: Props) {
     const tpl = templates.find((t) => t.id === id)
     if (tpl) setVariables(Object.fromEntries(Object.keys(tpl.variables || {}).map((k) => [k, ""])))
   }
+
+  const substituteVars = (html: string, vars: Record<string, string>) =>
+    html.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`)
 
   const validate = () => {
     const errs: string[] = []
@@ -67,15 +94,25 @@ export default function SendEmailView({ workspaceId }: Props) {
     if (errs.length) { setErrors(errs); return }
     setIsSending(true)
     try {
+      const builtin = mode === "template" && isBuiltinSelected
+        ? initialTemplates.find((t) => t.id === templateId) : null
+
       await transactionalService.sendEmail(workspaceId, {
         to: recipients.map((email) => ({ email })),
         from: { email: fromEmail, name: fromName || undefined },
         replyTo: replyTo || undefined,
-        subject: mode === "template" ? undefined : subject,
-        html: mode === "template" ? undefined : (htmlBody || undefined),
-        text: mode === "template" ? undefined : (plainText || undefined),
-        templateId: mode === "template" ? templateId : undefined,
-        templateData: mode === "template" ? variables : undefined,
+        // Built-in templates: substitute vars client-side and send as custom HTML
+        subject: builtin
+          ? substituteVars(builtin.subject, variables)
+          : mode === "template" ? undefined : subject,
+        html: builtin
+          ? substituteVars(builtin.htmlBody, variables)
+          : mode === "template" ? undefined : (htmlBody || undefined),
+        text: builtin
+          ? substituteVars(builtin.plainText, variables)
+          : mode === "template" ? undefined : (plainText || undefined),
+        templateId: mode === "template" && !isBuiltinSelected ? templateId : undefined,
+        templateData: mode === "template" && !isBuiltinSelected ? variables : undefined,
         tags: Object.keys(tags).length ? tags : undefined,
         idempotencyKey: idempotencyKey || undefined,
       })

@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/custom-toaster"
 import { AuthProvider } from "@/lib/auth-context"
+import { WorkspaceProvider } from "@/lib/workspace-context"
+import { ReduxProvider } from "@/lib/redux/ReduxProvider"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -48,11 +50,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-[#0B0C0F]">
       <body className={`font-sans antialiased bg-[#0B0C0F]`}>
-        <AuthProvider>
-          {children}
-          <Toaster />
-          <Analytics />
-        </AuthProvider>
+        <ReduxProvider>
+          <AuthProvider>
+            <WorkspaceProvider>
+              {children}
+              <Toaster />
+              <Analytics />
+            </WorkspaceProvider>
+          </AuthProvider>
+        </ReduxProvider>
       </body>
     </html>
   )

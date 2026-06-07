@@ -1,11 +1,12 @@
 import { apiClient } from './api-client';
 import type { Segment, FilterTree, FilterGroup, FilterRule } from './segments-data';
+import { FILTER_FIELDS } from './segments-data';
 
 // API filter tree uses a flat structure without id/type fields
 interface ApiFilterRule {
   field: string;
   operator: string;
-  value: string;
+  value?: string | number;
 }
 
 interface ApiFilterGroup {
@@ -22,7 +23,35 @@ function toApiFilterTree(tree: FilterTree): ApiFilterGroup {
         return toApiFilterTree(child as FilterGroup);
       }
       const rule = child as FilterRule;
-      return { field: rule.field, operator: rule.operator, value: rule.value };
+
+      // exists/not_exists have no value
+      if (rule.operator === 'exists' || rule.operator === 'not_exists') {
+        return { field: rule.field, operator: rule.operator };
+      }
+
+      const fieldDef = FILTER_FIELDS.find(f => f.value === rule.field);
+
+      // in/not_in: send as comma-separated string (API accepts string, processor splits)
+      if (rule.operator === 'in' || rule.operator === 'not_in') {
+        return { field: rule.field, operator: rule.operator, value: rule.value };
+      }
+
+      // occurred_within_days: always number
+      if (rule.operator === 'occurred_within_days') {
+        const numValue = Number(rule.value);
+        return { field: rule.field, operator: rule.operator, value: isNaN(numValue) ? rule.value : numValue };
+      }
+
+      // Convert value to number for numeric fields
+      let value: string | number = rule.value;
+      if (fieldDef?.type === 'number' && rule.value) {
+        const numValue = Number(rule.value);
+        if (!isNaN(numValue)) {
+          value = numValue;
+        }
+      }
+
+      return { field: rule.field, operator: rule.operator, value };
     }),
   };
 }
@@ -43,7 +72,7 @@ function fromApiFilterTree(tree: ApiFilterGroup, depth = 0): FilterTree {
         type: 'rule' as const,
         field: r.field,
         operator: r.operator as FilterRule['operator'],
-        value: r.value ?? '',
+        value: String(r.value ?? ''),
       };
     }),
   };

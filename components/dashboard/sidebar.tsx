@@ -10,6 +10,7 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { useWorkspace } from "@/lib/workspace-context"
 
 const NAV_GROUPS = [
   {
@@ -51,6 +52,7 @@ type NavItem = { name: string; href: string; icon: React.ElementType; api?: bool
 export default function Sidebar() {
   const pathname = usePathname()
   const { logout } = useAuth()
+  const { workspaceId } = useWorkspace()
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") return true
     const stored = localStorage.getItem("sidebar-collapsed")
@@ -110,7 +112,7 @@ export default function Sidebar() {
             )}
             {collapsed && <div className="h-3" />}
             {group.items.map((item) => (
-              <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} />
+              <NavLink key={item.href} item={item} pathname={pathname} collapsed={collapsed} workspaceId={workspaceId} />
             ))}
           </div>
         ))}
@@ -150,13 +152,14 @@ export default function Sidebar() {
   )
 }
 
-function NavLink({ item, pathname, collapsed }: { item: NavItem; pathname: string; collapsed: boolean }) {
-  const isActive = pathname === item.href
+function NavLink({ item, pathname, collapsed, workspaceId }: { item: NavItem; pathname: string; collapsed: boolean; workspaceId: string | null }) {
+  const href = workspaceId && item.href !== "/home" && item.href !== "/account" ? `${item.href}/${workspaceId}` : item.href
+  const isActive = pathname === href || pathname.startsWith(href + "/")
   const Icon = item.icon
   const [tipY, setTipY] = useState<number | null>(null)
 
   return (
-    <Link href={item.href}>
+    <Link href={href}>
       <div
         className={`relative flex items-center rounded-xl cursor-pointer transition-all duration-150 group ${
           collapsed ? "justify-center p-[11px]" : "gap-3 px-3 py-2.5"

@@ -54,9 +54,9 @@ export const FILTER_FIELDS = [
   { value: "properties.plan", label: "Plan (property)", type: "custom" },
   { value: "properties.company", label: "Company (property)", type: "custom" },
   { value: "properties.country", label: "Country (property)", type: "custom" },
-  { value: "event:page_view", label: "Event: Page View", type: "event" },
-  { value: "event:purchase", label: "Event: Purchase", type: "event" },
-  { value: "event:signup", label: "Event: Signup", type: "event" },
+  { value: "event:Page Viewed", label: "Event: Page View", type: "event" },
+  { value: "event:Purchase", label: "Event: Purchase", type: "event" },
+  { value: "event:Signup", label: "Event: Signup", type: "event" },
 ] as const
 
 export const OPERATORS_BY_TYPE: Record<string, { value: FilterOperator; label: string }[]> = {
@@ -167,7 +167,7 @@ export const initialSegments: Segment[] = [
       operator: "AND",
       children: [
         { id: "r3", type: "rule", field: "lifecycleStage", operator: "equals", value: "subscriber" },
-        { id: "r4", type: "rule", field: "event:page_view", operator: "not_exists", value: "" },
+        { id: "r4", type: "rule", field: "event:Page Viewed", operator: "not_exists", value: "" },
       ],
     },
   },

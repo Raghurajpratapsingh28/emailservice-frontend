@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Sidebar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
 import { useAuth } from "@/lib/auth-context"
+import { useWorkspace } from "@/lib/workspace-context"
 
 export default function DashboardLayout({
   children,
@@ -12,13 +13,21 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { isAuthenticated, isLoading } = useAuth()
+  const { workspaceId } = useWorkspace()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/signin')
     }
   }, [isAuthenticated, isLoading, router])
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && !workspaceId && !pathname.startsWith('/home') && pathname !== '/account' && pathname !== '/settings') {
+      router.push('/home')
+    }
+  }, [workspaceId, isLoading, isAuthenticated, pathname, router])
 
   if (isLoading) {
     return <div className="flex items-center justify-center w-screen h-screen bg-[#060709] text-white">Loading...</div>

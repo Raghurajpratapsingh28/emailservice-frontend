@@ -5,11 +5,13 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Plus, Settings, Users, AlertTriangle, ArrowRightLeft } from "lucide-react"
 import { workspaceService, type Workspace } from "@/lib/workspace-service"
+import { useWorkspace } from "@/lib/workspace-context"
 import { apiClient } from "@/lib/api-client"
 import { tokenManager } from "@/lib/token-manager"
 
 export default function WorkspaceListView() {
   const router = useRouter()
+  const { setWorkspaceId } = useWorkspace()
   const [workspaces, setWorkspaces] = useState<Array<{ workspace: Workspace; role: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -37,12 +39,18 @@ export default function WorkspaceListView() {
     e.preventDefault()
     setIsCreating(true)
     try {
-      await workspaceService.createWorkspace({ name, slug: slug || undefined, plan })
+      const result = await workspaceService.createWorkspace({ name, slug: slug || undefined, plan })
       setShowCreateForm(false)
       setName("")
       setSlug("")
       setPlan("free")
-      loadWorkspaces()
+      await loadWorkspaces()
+      // Auto-switch to newly created workspace
+      const newWorkspaceId = result.workspace.id
+      const switchRes = await workspaceService.switchWorkspace(newWorkspaceId)
+      apiClient.setAccessToken(switchRes.accessToken)
+      setWorkspaceId(newWorkspaceId)
+      router.push(`/campaigns/${newWorkspaceId}`)
     } catch (error) {
       console.error("Failed to create workspace:", error)
     } finally {

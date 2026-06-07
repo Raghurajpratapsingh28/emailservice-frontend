@@ -141,6 +141,16 @@ function GroupNode({
   )
 }
 
+function getValueInputProps(fieldType: string, operator: string): {
+  type: string
+  placeholder: string
+} {
+  if (operator === "occurred_within_days") return { type: "number", placeholder: "days (e.g. 30)" }
+  if (operator === "in" || operator === "not_in") return { type: "text", placeholder: "val1,val2,val3" }
+  if (fieldType === "number") return { type: "number", placeholder: "value..." }
+  return { type: "text", placeholder: "value..." }
+}
+
 function RuleNode({
   rule, onChange, onRemove, readOnly
 }: {
@@ -152,6 +162,7 @@ function RuleNode({
   const fieldType = getFieldType(rule.field)
   const operators = OPERATORS_BY_TYPE[fieldType] ?? OPERATORS_BY_TYPE.string
   const noValue = rule.operator === "exists" || rule.operator === "not_exists"
+  const { type: inputType, placeholder } = getValueInputProps(fieldType, rule.operator)
 
   if (readOnly) {
     const fieldLabel = FILTER_FIELDS.find((f) => f.value === rule.field)?.label ?? rule.field
@@ -176,7 +187,7 @@ function RuleNode({
           const newType = getFieldType(v)
           const newOps = OPERATORS_BY_TYPE[newType]
           const validOp = newOps.find((o) => o.value === rule.operator) ? rule.operator : newOps[0].value
-          onChange({ ...rule, field: v, operator: validOp })
+          onChange({ ...rule, field: v, operator: validOp, value: "" })
         }}
         options={FILTER_FIELDS.map((f) => ({ value: f.value, label: f.label }))}
         className="min-w-[140px]"
@@ -185,20 +196,33 @@ function RuleNode({
       {/* Operator selector */}
       <SelectField
         value={rule.operator}
-        onChange={(v) => onChange({ ...rule, operator: v as FilterRule["operator"] })}
+        onChange={(v) => onChange({ ...rule, operator: v as FilterRule["operator"], value: "" })}
         options={operators}
         className="min-w-[120px]"
       />
 
       {/* Value input */}
       {!noValue && (
-        <input
-          type={fieldType === "number" ? "number" : "text"}
-          value={rule.value}
-          onChange={(e) => onChange({ ...rule, value: e.target.value })}
-          placeholder="value..."
-          className="flex-1 min-w-[100px] px-2.5 py-1 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-lg text-xs text-white/90 placeholder-[#7A8499] font-mono focus:outline-none transition-colors"
-        />
+        <div className="flex-1 min-w-[120px] relative">
+          <input
+            type={inputType}
+            value={rule.value}
+            onChange={(e) => onChange({ ...rule, value: e.target.value })}
+            placeholder={placeholder}
+            min={inputType === "number" ? 0 : undefined}
+            className="w-full px-2.5 py-1 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-lg text-xs text-white/90 placeholder-[#7A8499] font-mono focus:outline-none transition-colors"
+          />
+          {(rule.operator === "in" || rule.operator === "not_in") && (
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-[#7A8499] pointer-events-none font-mono">
+              csv
+            </span>
+          )}
+          {rule.operator === "occurred_within_days" && (
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-[#7A8499] pointer-events-none font-mono">
+              days
+            </span>
+          )}
+        </div>
       )}
 
       <button

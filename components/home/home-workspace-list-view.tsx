@@ -5,26 +5,45 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { LayoutDashboard, ArrowRight, Loader2 } from "lucide-react"
 import { workspaceService, type Workspace } from "@/lib/workspace-service"
+import { useWorkspace } from "@/lib/workspace-context"
 import { apiClient } from "@/lib/api-client"
 
 export default function HomeWorkspaceListView() {
   const router = useRouter()
+  const { setWorkspaceId } = useWorkspace()
   const [workspaces, setWorkspaces] = useState<Array<{ workspace: Workspace; role: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     workspaceService.getWorkspaces()
-      .then((res) => setWorkspaces(res.items))
-      .catch(console.error)
+      .then((res) => {
+        console.log('Workspaces loaded:', res)
+        setWorkspaces(res.items)
+      })
+      .catch((err) => {
+        console.error('Failed to load workspaces:', err)
+        setError(err.message || 'Failed to load workspaces')
+      })
       .finally(() => setIsLoading(false))
   }, [])
 
   const handleOpen = async (workspaceId: string) => {
     try { const res = await workspaceService.switchWorkspace(workspaceId); apiClient.setAccessToken(res.accessToken) } catch { /* non-fatal */ }
+    setWorkspaceId(workspaceId)
     router.push(`/home/${workspaceId}`)
   }
 
   if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
+
+  if (error) return (
+    <div className="flex items-center justify-center py-24">
+      <div className="text-center">
+        <div className="text-red-400 text-sm mb-2">Error loading workspaces</div>
+        <div className="text-xs text-[#7A8499]">{error}</div>
+      </div>
+    </div>
+  )
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">

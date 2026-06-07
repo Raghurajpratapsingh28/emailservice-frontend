@@ -9,6 +9,7 @@ import TemplatesTable from "./templates-table"
 import { SendStatusBadge, TemplateStatusBadge } from "./status-badges"
 import { transactionalService, type EmailSend, type EmailTemplate } from "@/lib/transactional-service"
 import type { TransactionalSend, EmailTemplate as LocalEmailTemplate } from "@/lib/transactional-data"
+import { initialTemplates } from "@/lib/transactional-data"
 
 type Tab = "sends" | "templates"
 
@@ -71,7 +72,7 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
   }, [workspaceId, statusFilter, recipientFilter, dateFrom, dateTo])
 
   const loadTemplates = useCallback(async () => {
-    if (!workspaceId) return
+    if (!workspaceId) { setTemplates(initialTemplates); setTemplatesTotal(initialTemplates.length); setTemplatesLoading(false); return }
     setTemplatesLoading(true)
     try {
       const res = await transactionalService.getTemplates(workspaceId, {
@@ -80,9 +81,18 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
         latestOnly,
         pageSize: 100,
       })
-      setTemplates(res.items.map(mapTemplate))
-      setTemplatesTotal(res.total)
-    } catch (err) { console.error(err) }
+      const mapped = res.items.map(mapTemplate)
+      if (mapped.length === 0) {
+        setTemplates(initialTemplates)
+        setTemplatesTotal(initialTemplates.length)
+      } else {
+        setTemplates(mapped)
+        setTemplatesTotal(res.total)
+      }
+    } catch {
+      setTemplates(initialTemplates)
+      setTemplatesTotal(initialTemplates.length)
+    }
     finally { setTemplatesLoading(false) }
   }, [workspaceId, tplStatus, tplSearch, latestOnly])
 
