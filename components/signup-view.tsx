@@ -86,17 +86,15 @@ export default function SignupView() {
         {/* Top Header Navigation */}
         <div className="flex items-center justify-between w-full mb-6 md:mb-0">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Image 
-              src="/logo.svg" 
+              src="/logos/logo.png" 
               alt="EngageIQ Logo" 
-              width={28} 
-              height={28}
-              className="w-7 h-7 object-contain"
+              width={160} 
+              height={48}
+              className="w-40 h-auto object-contain"
+              priority
             />
-            <span className="text-xl font-bold tracking-tight text-neutral-900 font-sans">
-              Engage<span className="text-orange-500 font-semibold">IQ</span>
-            </span>
           </div>
 
           {/* Top Right Toggle */}

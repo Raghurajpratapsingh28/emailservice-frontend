@@ -76,34 +76,34 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {propWorkspaceId && (
-            <button onClick={() => router.push("/campaigns")} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+            <button onClick={() => router.push("/campaigns")} className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-2 cursor-pointer">
               <ArrowLeft className="w-3 h-3" /> All Workspaces
             </button>
           )}
-          <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Broadcasts Dispatch</span>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Broadcasts Dispatch</span>
           <div className="flex items-center gap-3 mt-1.5">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white/95 leading-none">Campaigns</h1>
-            <div className="flex items-baseline gap-1 bg-[#111319] border border-[#1E2230] px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-[#FE8A5C]">
-              <span>{total}</span><span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
+            <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] leading-none">Campaigns</h1>
+            <div className="flex items-baseline gap-1 bg-[#18191C] border border-[#202126] px-2.5 py-0.5 rounded-full text-xs font-medium text-[#FFFFFF]">
+              <span className="font-bold">{total}</span><span className="text-[9px] text-[#8A8D96] uppercase">Total</span>
             </div>
           </div>
         </div>
-        <button onClick={() => router.push(`/campaigns/${workspaceId}/create`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
-          <Plus className="w-4 h-4" /> Create Campaign
+        <button onClick={() => router.push(`/campaigns/${workspaceId}/create`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold transition-all cursor-pointer">
+          <Plus className="w-4 h-4 text-[#FFFFFF]" /> Create Campaign
         </button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         {[
-          { label: "Total", value: COUNTS.total, color: "text-white" },
-          { label: "Draft", value: COUNTS.draft, color: "text-zinc-400" },
-          { label: "Scheduled", value: COUNTS.scheduled, color: "text-blue-400" },
-          { label: "Sending", value: COUNTS.sending, color: "text-amber-400" },
-          { label: "Sent", value: COUNTS.sent, color: "text-emerald-400" },
+          { label: "Total", value: COUNTS.total, color: "text-[#FFFFFF]" },
+          { label: "Draft", value: COUNTS.draft, color: "text-[#FFB020]" },
+          { label: "Scheduled", value: COUNTS.scheduled, color: "text-[#3CD3AD]" },
+          { label: "Sending", value: COUNTS.sending, color: "text-[#696CFF]" },
+          { label: "Sent", value: COUNTS.sent, color: "text-[#FFFFFF]" },
         ].map(({ label, value, color }) => (
-          <div key={label} className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
-            <span className="text-[10px] font-mono text-[#7A8499] uppercase tracking-wider">{label}</span>
-            <span className={`text-xl font-bold font-mono ${color}`}>{value}</span>
+          <div key={label} className="enterprise-card p-5 flex items-center justify-between h-full">
+            <span className="text-[10px] font-medium text-[#8A8D96] uppercase tracking-wider">{label}</span>
+            <span className={`text-xl font-bold ${color}`}>{value}</span>
           </div>
         ))}
       </div>
@@ -111,11 +111,11 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
       <CampaignFilters search={search} setSearch={setSearch} status={status} setStatus={setStatus} dateFrom={dateFrom} setDateFrom={setDateFrom} dateTo={dateTo} setDateTo={setDateTo} />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
+        <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" /></div>
       ) : error ? (
-        <div className="p-8 rounded-3xl bg-[#0F1016]/95 border border-red-500/30 text-center">
+        <div className="p-8 enterprise-card border-red-500/30 text-center">
           <p className="text-sm text-red-400">{error}</p>
-          <button onClick={load} className="mt-3 text-xs text-[#6B7280] underline hover:text-white cursor-pointer">Retry</button>
+          <button onClick={load} className="mt-3 text-xs text-[#8A8D96] underline hover:text-[#FFFFFF] cursor-pointer">Retry</button>
         </div>
       ) : (
         <CampaignsTable
@@ -131,12 +131,12 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
       )}
 
       {!isLoading && !error && total > 0 && (
-        <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8499] px-1">
+        <div className="flex items-center justify-between text-[11px] font-medium text-[#8A8D96] px-1">
           <span>Showing {campaigns.length} of {total} campaigns</span>
           <div className="flex items-center gap-2">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 bg-[#12141A] border border-[#1E2230] rounded-lg disabled:opacity-40 hover:border-[#383E58] transition-all cursor-pointer disabled:cursor-not-allowed">Prev</button>
-            <span>Page {page}</span>
-            <button onClick={() => setPage(p => p + 1)} disabled={campaigns.length < 50} className="px-2.5 py-1 bg-[#12141A] border border-[#1E2230] rounded-lg disabled:opacity-40 hover:border-[#383E58] transition-all cursor-pointer disabled:cursor-not-allowed">Next</button>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Prev</button>
+            <span className="text-[#FFFFFF]">Page {page}</span>
+            <button onClick={() => setPage(p => p + 1)} disabled={campaigns.length < 50} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Next</button>
           </div>
         </div>
       )}

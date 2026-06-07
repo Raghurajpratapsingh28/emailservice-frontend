@@ -138,60 +138,60 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
+    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {propWorkspaceId && (
-            <button onClick={() => router.push("/transactional")} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+            <button onClick={() => router.push("/transactional")} className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-3 cursor-pointer">
               <ArrowLeft className="w-3 h-3" /> All Workspaces
             </button>
           )}
-          <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Developer API</span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">Transactional Emails</h1>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Developer API</span>
+          <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] mt-1">Transactional Emails</h1>
         </div>
         {tab === "sends" ? (
-          <button onClick={() => router.push(`/transactional/${workspaceId}/send`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
+          <button onClick={() => router.push(`/transactional/${workspaceId}/send`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold transition-all cursor-pointer">
             <Plus className="w-4 h-4" /> Send Email
           </button>
         ) : (
-          <button onClick={() => router.push(`/transactional/${workspaceId}/template`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer">
+          <button onClick={() => router.push(`/transactional/${workspaceId}/template`)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold transition-all cursor-pointer">
             <Plus className="w-4 h-4" /> Create Template
           </button>
         )}
       </div>
 
-      <div className="flex bg-[#12141A] p-1 rounded-xl border border-[#1E222D] w-fit">
+      <div className="flex border-b border-[#202126] w-full mb-6">
         {(["sends", "templates"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`px-5 py-2 text-xs font-semibold rounded-lg transition-all duration-200 capitalize cursor-pointer ${tab === t ? "bg-[#252833] text-white shadow-md shadow-black/20" : "text-[#767E8C] hover:text-white"}`}>
-            {t}<span className="ml-1.5 text-[9px] font-mono opacity-60">{t === "sends" ? sendsTotal : templatesTotal}</span>
+          <button key={t} onClick={() => setTab(t)} className={`px-5 py-3 text-xs font-medium transition-all capitalize cursor-pointer border-b-2 ${tab === t ? "border-[#696CFF] text-[#FFFFFF]" : "border-transparent text-[#8A8D96] hover:text-[#FFFFFF]"}`}>
+            {t}<span className="ml-1.5 text-[9px] font-medium opacity-60">({t === "sends" ? sendsTotal : templatesTotal})</span>
           </button>
         ))}
       </div>
 
       {tab === "sends" && (
         <>
-          <div className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-wrap items-center gap-3">
+          <div className="enterprise-card p-4 flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8499]" />
-              <input value={recipientFilter} onChange={(e) => setRecipientFilter(e.target.value)} placeholder="Search by recipient..." className="w-full pl-9 pr-3 py-2 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white placeholder-[#7A8499] focus:outline-none transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A8D96]" />
+              <input value={recipientFilter} onChange={(e) => setRecipientFilter(e.target.value)} placeholder="Search by recipient..." className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors" />
             </div>
             <Sel value={statusFilter} onChange={setStatusFilter}>
               <option value="all">All Statuses</option>
               {["queued", "sending", "sent", "failed", "bounced"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </Sel>
             <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={dateCls} />
-            <span className="text-[10px] text-[#7A8499] font-mono">to</span>
+            <span className="text-[10px] text-[#8A8D96] font-medium">to</span>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={dateCls} />
             {(recipientFilter || statusFilter !== "all" || dateFrom || dateTo) && (
-              <button onClick={() => { setRecipientFilter(""); setStatusFilter("all"); setDateFrom(""); setDateTo("") }} className="text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] cursor-pointer">Clear</button>
+              <button onClick={() => { setRecipientFilter(""); setStatusFilter("all"); setDateFrom(""); setDateTo("") }} className="text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer">Clear</button>
             )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {(["queued", "sending", "sent", "failed", "bounced"] as const).map((s) => (
-              <div key={s} className="p-3.5 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
+              <div key={s} className="enterprise-card p-4 flex items-center justify-between">
                 <SendStatusBadge status={s} />
-                <span className="text-sm font-bold font-mono text-white/80">{sends.filter((x) => x.status === s).length}</span>
+                <span className="text-xl font-semibold text-[#FFFFFF]">{sends.filter((x) => x.status === s).length}</span>
               </div>
             ))}
           </div>
@@ -201,7 +201,7 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
           ) : (
             <>
               <SendsTable sends={filteredSends} onView={(s) => router.push(`/transactional/${workspaceId}/details/${s.id}`)} />
-              {filteredSends.length > 0 && <p className="text-[10px] font-mono text-[#7A8499] px-1">Showing {filteredSends.length} of {sendsTotal} sends</p>}
+              {filteredSends.length > 0 && <p className="text-[10px] font-medium text-[#8A8D96] px-1">Showing {filteredSends.length} of {sendsTotal} sends</p>}
             </>
           )}
         </>
@@ -209,26 +209,26 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
 
       {tab === "templates" && (
         <>
-          <div className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-wrap items-center gap-3">
+          <div className="enterprise-card p-4 flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8499]" />
-              <input value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} placeholder="Search templates..." className="w-full pl-9 pr-3 py-2 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white placeholder-[#7A8499] focus:outline-none transition-colors" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A8D96]" />
+              <input value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} placeholder="Search templates..." className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors" />
             </div>
             <Sel value={tplStatus} onChange={setTplStatus}>
               <option value="all">All Statuses</option>
               {["draft", "published", "archived"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </Sel>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={latestOnly} onChange={(e) => setLatestOnly(e.target.checked)} className="w-3.5 h-3.5 accent-[#6B7280]" />
-              <span className="text-[10px] font-mono text-[#B0B8C8]">Latest only</span>
+              <input type="checkbox" checked={latestOnly} onChange={(e) => setLatestOnly(e.target.checked)} className="w-3.5 h-3.5 accent-[#696CFF]" />
+              <span className="text-[10px] font-medium text-[#8A8D96]">Latest only</span>
             </label>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             {(["draft", "published", "archived"] as const).map((s) => (
-              <div key={s} className="p-3.5 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
+              <div key={s} className="enterprise-card p-4 flex items-center justify-between">
                 <TemplateStatusBadge status={s} />
-                <span className="text-sm font-bold font-mono text-white/80">{templates.filter((x) => x.status === s).length}</span>
+                <span className="text-xl font-semibold text-[#FFFFFF]">{templates.filter((x) => x.status === s).length}</span>
               </div>
             ))}
           </div>
@@ -253,12 +253,12 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
 function Sel({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
     <div className="relative">
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="appearance-none pl-3 pr-8 py-2 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white/80 font-mono cursor-pointer focus:outline-none transition-colors">
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="appearance-none pl-3 pr-8 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] font-medium cursor-pointer focus:outline-none transition-colors">
         {children}
       </select>
-      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[#7A8499] pointer-events-none" />
+      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[#8A8D96] pointer-events-none" />
     </div>
   )
 }
 
-const dateCls = "px-3 py-2 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white/80 font-mono focus:outline-none transition-colors cursor-pointer"
+const dateCls = "px-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] font-medium focus:outline-none transition-colors cursor-pointer"

@@ -45,9 +45,9 @@ export default function CampaignWorkspaceListView() {
       className="space-y-6 max-w-[1200px] mx-auto select-none"
     >
       <div>
-        <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Broadcasts Dispatch</span>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">Campaigns</h1>
-        <p className="text-xs text-[#7A8499] mt-1.5">Select a workspace to manage its campaigns.</p>
+        <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Broadcasts Dispatch</span>
+        <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] mt-1">Campaigns</h1>
+        <p className="text-xs text-[#8A8D96] mt-1.5 font-medium">Select a workspace to manage its campaigns.</p>
       </div>
 
       <div className="grid gap-4">
@@ -55,40 +55,40 @@ export default function CampaignWorkspaceListView() {
           <button
             key={workspace.id}
             onClick={() => handleOpen(workspace.id)}
-            className="w-full text-left p-6 bg-[#08090C] border border-[#1E2230] rounded-2xl hover:border-[#383E58] hover:bg-[#0F1016] transition-all group cursor-pointer"
+            className="w-full text-left p-6 bg-[#18191C] border border-[#202126] rounded-[16px] hover:border-[#8A8D96] hover:bg-[#25262B] transition-all group cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#FE8A5C]/10 border border-[#FE8A5C]/25 flex items-center justify-center shrink-0">
-                  <Megaphone className="w-5 h-5 text-[#FE8A5C]" />
+                <div className="w-10 h-10 rounded-[12px] bg-transparent flex items-center justify-center shrink-0">
+                  <Megaphone className="w-5 h-5 text-[#696CFF]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="text-base font-bold text-white">{workspace.name}</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-lg bg-[#6B7280]/10 border border-[#6B7280]/20 text-[#9CA3AF]">
+                    <span className="text-base font-semibold text-[#FFFFFF]">{workspace.name}</span>
+                    <span className="text-[9px] font-medium px-2 py-0.5 rounded-[8px] bg-transparent border border-[#202126] text-[#8A8D96]">
                       {role}
                     </span>
                     {workspace.status === "inactive" && (
-                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                      <span className="text-[9px] font-medium px-2 py-0.5 rounded-[8px] bg-amber-500/10 border border-amber-500/20 text-amber-400">
                         inactive
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-[#7A8499] font-mono mt-0.5">/{workspace.slug} · {workspace.plan}</p>
+                  <p className="text-xs text-[#8A8D96] font-medium mt-0.5">/{workspace.slug} · {workspace.plan}</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-[#383E58] group-hover:text-[#9CA3AF] transition-colors shrink-0" />
+              <ArrowRight className="w-4 h-4 text-[#8A8D96] group-hover:text-[#FFFFFF] transition-colors shrink-0" />
             </div>
           </button>
         ))}
 
         {workspaces.length === 0 && (
-          <div className="p-12 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#FE8A5C]/10 border border-[#FE8A5C]/25 flex items-center justify-center text-[#FE8A5C] mb-4">
+          <div className="enterprise-card p-12 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-[12px] bg-transparent flex items-center justify-center text-[#696CFF] mb-4">
               <Megaphone className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-semibold text-white">No Workspaces</h3>
-            <p className="text-xs text-[#B0B8C8] mt-1.5">Create a workspace first from Settings.</p>
+            <h3 className="text-sm font-semibold text-[#FFFFFF]">No Workspaces</h3>
+            <p className="text-xs text-[#8A8D96] mt-1.5 font-medium">Create a workspace first from Settings.</p>
           </div>
         )}
       </div>

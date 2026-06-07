@@ -67,39 +67,39 @@ function CreateKeyDialog({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.18 }}
-        className="relative w-full max-w-md bg-[#0C0E14] border border-[#1E2230] rounded-2xl p-6 shadow-2xl"
+        className="relative w-full max-w-md bg-[#18191C] border border-[#202126] rounded-2xl p-6 shadow-2xl"
       >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/25 flex items-center justify-center">
-              <KeyRound className="w-4 h-4 text-blue-400" />
+            <div className="w-8 h-8 rounded-lg bg-[#696CFF]/10 border border-[#696CFF]/25 flex items-center justify-center">
+              <KeyRound className="w-4 h-4 text-[#696CFF]" />
             </div>
-            <h2 className="text-base font-bold text-white">New API Key</h2>
+            <h2 className="text-base font-bold text-[#FFFFFF]">New API Key</h2>
           </div>
-          <button onClick={onClose} className="text-[#4B5563] hover:text-white transition-colors">
+          <button onClick={onClose} className="text-[#8A8D96] hover:text-[#FFFFFF] transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Key Name</label>
+            <label className="block text-xs font-medium text-[#8A8D96] mb-1.5">Key Name</label>
             <input
               autoFocus
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Production Backend, Staging App"
-              className="w-full bg-[#07080A] border border-[#1E2230] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#4B5563] focus:outline-none focus:border-blue-500/50 focus:bg-[#07080A] transition-colors"
+              className="w-full bg-[#0D0E12] border border-[#202126] rounded-xl px-3.5 py-2.5 text-sm text-[#FFFFFF] placeholder:text-[#8A8D96] focus:outline-none focus:border-[#696CFF]/50 focus:bg-[#0D0E12] transition-colors"
               maxLength={200}
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/15">
+          <div className="p-3 rounded-xl bg-[#696CFF]/5 border border-[#696CFF]/15">
             <div className="flex items-start gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-              <p className="text-[11px] text-[#9CA3AF] leading-relaxed">
-                The full key is shown <strong className="text-white">once</strong> after creation. Copy it immediately — it cannot be retrieved again.
+              <ShieldCheck className="w-3.5 h-3.5 text-[#696CFF] mt-0.5 shrink-0" />
+              <p className="text-[11px] text-[#8A8D96] leading-relaxed">
+                The full key is shown <strong className="text-[#FFFFFF]">once</strong> after creation. Copy it immediately — it cannot be retrieved again.
               </p>
             </div>
           </div>
@@ -115,14 +115,14 @@ function CreateKeyDialog({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 border border-[#1E2230] rounded-xl text-xs font-semibold text-[#9CA3AF] hover:border-[#383E58] hover:text-white transition-colors"
+              className="flex-1 py-2.5 border border-[#202126] rounded-xl text-xs font-semibold text-[#8A8D96] hover:border-[#696CFF] hover:text-[#FFFFFF] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || isLoading}
-              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/40 disabled:cursor-not-allowed rounded-xl text-xs font-semibold text-white transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-[#696CFF] hover:bg-[#5A5CE6] disabled:bg-[#696CFF]/40 disabled:cursor-not-allowed rounded-xl text-xs font-semibold text-[#FFFFFF] transition-colors flex items-center justify-center gap-2"
             >
               {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               Generate Key
@@ -161,15 +161,15 @@ function KeyRevealDialog({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.18 }}
-        className="relative w-full max-w-lg bg-[#0C0E14] border border-[#1E2230] rounded-2xl p-6 shadow-2xl"
+        className="relative w-full max-w-lg bg-[#18191C] border border-[#202126] rounded-2xl p-6 shadow-2xl"
       >
         <div className="flex items-center gap-3 mb-5">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">API Key Created</h2>
-            <p className="text-[11px] text-[#7A8499]">{apiKey.name}</p>
+            <h2 className="text-base font-bold text-[#FFFFFF]">API Key Created</h2>
+            <p className="text-[11px] text-[#8A8D96]">{apiKey.name}</p>
           </div>
         </div>
 
@@ -182,19 +182,19 @@ function KeyRevealDialog({
           </div>
         </div>
 
-        <div className="rounded-xl bg-[#07080A] border border-[#1E2230] overflow-hidden mb-4">
-          <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#1E2230]">
-            <span className="text-[10px] font-mono text-[#4B5563]">API KEY</span>
+        <div className="rounded-xl bg-[#0D0E12] border border-[#202126] overflow-hidden mb-4">
+          <div className="flex items-center justify-between px-3.5 py-2 border-b border-[#202126]">
+            <span className="text-[10px] font-mono text-[#8A8D96]">API KEY</span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setVisible((v) => !v)}
-                className="text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
+                className="text-[#8A8D96] hover:text-[#8A8D96] transition-colors"
               >
                 {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={copy}
-                className="flex items-center gap-1.5 text-[10px] font-mono text-blue-400 hover:text-blue-300 transition-colors"
+                className="flex items-center gap-1.5 text-[10px] font-mono text-[#696CFF] hover:text-[#5A5CE6] transition-colors"
               >
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                 {copied ? "Copied" : "Copy"}
@@ -208,9 +208,9 @@ function KeyRevealDialog({
           </div>
         </div>
 
-        <div className="rounded-xl bg-[#07080A] border border-[#1E2230] p-3.5 mb-4">
-          <p className="text-[10px] font-mono text-[#4B5563] mb-2">QUICK START</p>
-          <pre className="text-[11px] font-mono text-[#9CA3AF] whitespace-pre-wrap leading-relaxed">{`import { EngageIQ } from "@engageiq/node"
+        <div className="rounded-xl bg-[#0D0E12] border border-[#202126] p-3.5 mb-4">
+          <p className="text-[10px] font-mono text-[#8A8D96] mb-2">QUICK START</p>
+          <pre className="text-[11px] font-mono text-[#8A8D96] whitespace-pre-wrap leading-relaxed">{`import { EngageIQ } from "@engageiq/node"
 
 const client = new EngageIQ({
   apiKey: "${plaintext.slice(0, 16)}...",
@@ -220,7 +220,7 @@ const client = new EngageIQ({
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-[#1E2230] hover:bg-[#252836] rounded-xl text-xs font-semibold text-white transition-colors"
+          className="w-full py-2.5 bg-[#25262B] hover:bg-[#383E58] rounded-xl text-xs font-semibold text-[#FFFFFF] transition-colors"
         >
           Done — I've saved my key
         </button>
@@ -249,32 +249,32 @@ function RevokeDialog({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 10 }}
         transition={{ duration: 0.18 }}
-        className="relative w-full max-w-sm bg-[#0C0E14] border border-[#1E2230] rounded-2xl p-6 shadow-2xl"
+        className="relative w-full max-w-sm bg-[#18191C] border border-[#202126] rounded-2xl p-6 shadow-2xl"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/25 flex items-center justify-center">
             <Trash2 className="w-4 h-4 text-red-400" />
           </div>
-          <h2 className="text-base font-bold text-white">Revoke Key</h2>
+          <h2 className="text-base font-bold text-[#FFFFFF]">Revoke Key</h2>
         </div>
-        <p className="text-sm text-[#9CA3AF] mb-1">
+        <p className="text-sm text-[#8A8D96] mb-1">
           Are you sure you want to revoke{" "}
-          <span className="text-white font-semibold">{apiKey.name}</span>?
+          <span className="text-[#FFFFFF] font-semibold">{apiKey.name}</span>?
         </p>
-        <p className="text-xs text-[#6B7280] mb-5">
-          Any apps using <code className="font-mono text-[#9CA3AF]">{apiKey.keyPrefix}…</code> will immediately lose access.
+        <p className="text-xs text-[#8A8D96] mb-5">
+          Any apps using <code className="font-mono text-[#8A8D96]">{apiKey.keyPrefix}…</code> will immediately lose access.
         </p>
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 border border-[#1E2230] rounded-xl text-xs font-semibold text-[#9CA3AF] hover:border-[#383E58] hover:text-white transition-colors"
+            className="flex-1 py-2.5 border border-[#202126] rounded-xl text-xs font-semibold text-[#8A8D96] hover:border-[#696CFF] hover:text-[#FFFFFF] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 py-2.5 bg-red-600/90 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-semibold text-white transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 bg-red-600/90 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-semibold text-[#FFFFFF] transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
             Revoke
@@ -353,7 +353,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" />
+        <Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" />
       </div>
     )
   }
@@ -371,18 +371,18 @@ export default function ApiKeysView({ workspaceId }: Props) {
           <div>
             <button
               onClick={() => router.push("/integrations")}
-              className="flex items-center gap-1.5 text-[11px] text-[#6B7280] hover:text-[#9CA3AF] transition-colors mb-2 cursor-pointer"
+              className="flex items-center gap-1.5 text-[11px] text-[#8A8D96] hover:text-[#8A8D96] transition-colors mb-2 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Integrations
             </button>
-            <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">
+            <span className="text-[10px] text-[#8A8D96] font-mono uppercase tracking-wider">
               API Keys
             </span>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#FFFFFF] mt-1">
               {workspace?.name ?? workspaceId}
             </h1>
-            <p className="text-xs text-[#7A8499] mt-1">
+            <p className="text-xs text-[#8A8D96] mt-1">
               {total} key{total !== 1 ? "s" : ""} · use these to authenticate SDK calls from your backend
             </p>
           </div>
@@ -390,13 +390,13 @@ export default function ApiKeysView({ workspaceId }: Props) {
             <button
               onClick={() => load(true)}
               disabled={isRefreshing}
-              className="p-2 border border-[#1E2230] rounded-xl text-[#6B7280] hover:text-white hover:border-[#383E58] transition-colors disabled:opacity-50"
+              className="p-2 border border-[#202126] rounded-xl text-[#8A8D96] hover:text-[#FFFFFF] hover:border-[#696CFF] transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             </button>
             <button
               onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold text-white transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] rounded-xl text-xs font-semibold text-[#FFFFFF] transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               New API Key
@@ -405,32 +405,32 @@ export default function ApiKeysView({ workspaceId }: Props) {
         </div>
 
         {/* Info banner */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/15">
-          <Terminal className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#696CFF]/5 border border-[#696CFF]/15">
+          <Terminal className="w-4 h-4 text-[#696CFF] shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-white mb-0.5">SDK Integration</p>
-            <p className="text-[11px] text-[#7A8499] leading-relaxed">
+            <p className="text-xs font-semibold text-[#FFFFFF] mb-0.5">SDK Integration</p>
+            <p className="text-[11px] text-[#8A8D96] leading-relaxed">
               Use these keys with{" "}
-              <code className="font-mono text-blue-400 text-[10px]">@engageiq/node</code> or any HTTP client.
-              Pass as <code className="font-mono text-blue-400 text-[10px]">Authorization: Bearer &lt;key&gt;</code> with
-              <code className="font-mono text-blue-400 text-[10px]"> x-workspace-id: {workspaceId.slice(0, 8)}…</code>
+              <code className="font-mono text-[#696CFF] text-[10px]">@engageiq/node</code> or any HTTP client.
+              Pass as <code className="font-mono text-[#696CFF] text-[10px]">Authorization: Bearer &lt;key&gt;</code> with
+              <code className="font-mono text-[#696CFF] text-[10px]"> x-workspace-id: {workspaceId.slice(0, 8)}…</code>
             </p>
           </div>
         </div>
 
         {/* Keys list */}
         {keys.length === 0 ? (
-          <div className="p-14 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-col items-center text-center">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center mb-4">
-              <KeyRound className="w-6 h-6 text-blue-400" />
+          <div className="p-14 rounded-3xl bg-[#18191C] border border-[#202126] flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#696CFF]/10 border border-[#696CFF]/25 flex items-center justify-center mb-4">
+              <KeyRound className="w-6 h-6 text-[#696CFF]" />
             </div>
-            <h3 className="text-sm font-semibold text-white">No API Keys</h3>
-            <p className="text-xs text-[#B0B8C8] mt-1.5 max-w-[280px] leading-relaxed">
+            <h3 className="text-sm font-semibold text-[#FFFFFF]">No API Keys</h3>
+            <p className="text-xs text-[#8A8D96] mt-1.5 max-w-[280px] leading-relaxed">
               Generate a key to start authenticating your backend apps with EngageIQ.
             </p>
             <button
               onClick={() => setShowCreate(true)}
-              className="mt-5 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold text-white transition-colors cursor-pointer"
+              className="mt-5 flex items-center gap-2 px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] rounded-xl text-xs font-semibold text-[#FFFFFF] transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               Generate First Key
@@ -444,16 +444,16 @@ export default function ApiKeysView({ workspaceId }: Props) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="p-5 bg-[#08090C] border border-[#1E2230] rounded-2xl hover:border-[#2A2F42] transition-colors"
+                className="p-5 bg-[#18191C] border border-[#202126] rounded-2xl hover:border-[#696CFF] transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/8 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <KeyRound className="w-4 h-4 text-blue-400" />
+                    <div className="w-9 h-9 rounded-xl bg-[#696CFF]/10 border border-[#696CFF]/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <KeyRound className="w-4 h-4 text-[#696CFF]" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-white">{k.name}</span>
+                        <span className="text-sm font-bold text-[#FFFFFF]">{k.name}</span>
                         {k.isActive ? (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                             active
@@ -469,7 +469,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <button
                           onClick={() => copyPrefix(k.keyPrefix, k.id)}
-                          className="flex items-center gap-1.5 font-mono text-[11px] text-[#6B7280] hover:text-[#9CA3AF] transition-colors"
+                          className="flex items-center gap-1.5 font-mono text-[11px] text-[#8A8D96] hover:text-[#8A8D96] transition-colors"
                         >
                           <code>{k.keyPrefix}{"•".repeat(8)}</code>
                           {copiedId === k.id
@@ -478,7 +478,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
                           }
                         </button>
                         {k.scope.split(",").map((s) => (
-                          <span key={s} className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-[#1E2230] text-[#9CA3AF]">
+                          <span key={s} className="text-[9px] font-mono px-1.5 py-0.5 rounded-md bg-[#25262B] text-[#8A8D96]">
                             {s.trim()}
                           </span>
                         ))}
@@ -486,16 +486,16 @@ export default function ApiKeysView({ workspaceId }: Props) {
 
                       {/* Meta */}
                       <div className="flex items-center gap-4 mt-2">
-                        <span className="text-[10px] text-[#4B5563]">
+                        <span className="text-[10px] text-[#8A8D96]">
                           Created {formatDate(k.createdAt)}
                         </span>
                         {k.lastUsedAt ? (
-                          <span className="flex items-center gap-1 text-[10px] text-[#4B5563]">
+                          <span className="flex items-center gap-1 text-[10px] text-[#8A8D96]">
                             <Clock className="w-3 h-3" />
                             Last used {timeAgo(k.lastUsedAt)}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-[#4B5563]">Never used</span>
+                          <span className="text-[10px] text-[#8A8D96]">Never used</span>
                         )}
                       </div>
                     </div>
@@ -504,7 +504,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
                   {k.isActive && (
                     <button
                       onClick={() => setRevoking(k)}
-                      className="shrink-0 p-2 rounded-lg text-[#4B5563] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
+                      className="shrink-0 p-2 rounded-lg text-[#8A8D96] hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"
                       title="Revoke key"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -517,8 +517,8 @@ export default function ApiKeysView({ workspaceId }: Props) {
         )}
 
         {/* Security note */}
-        <div className="p-4 rounded-2xl bg-[#0A0C10] border border-[#1E2230]">
-          <p className="text-[10px] font-mono text-[#4B5563] mb-1.5 uppercase tracking-wider">Security</p>
+        <div className="p-4 rounded-2xl bg-[#18191C] border border-[#202126]">
+          <p className="text-[10px] font-mono text-[#8A8D96] mb-1.5 uppercase tracking-wider">Security</p>
           <ul className="space-y-1">
             {[
               "Keys are hashed with SHA-256 — the plaintext is never stored.",
@@ -526,7 +526,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
               "Rotate keys regularly. Create a new key before revoking the old one.",
               "Never expose API keys in browser code or public repositories.",
             ].map((tip) => (
-              <li key={tip} className="flex items-start gap-2 text-[11px] text-[#6B7280]">
+              <li key={tip} className="flex items-start gap-2 text-[11px] text-[#8A8D96]">
                 <ShieldCheck className="w-3 h-3 text-[#374151] shrink-0 mt-0.5" />
                 {tip}
               </li>

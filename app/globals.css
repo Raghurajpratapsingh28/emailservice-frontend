@@ -322,3 +322,54 @@ html {
     animation-play-state: paused;
   }
 }
+
+/* Metric Flow Tokens */
+:root {
+  --bg-primary: #0D0E12;
+  --bg-surface: #18191C;
+  --bg-elevated: #202126;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8A8D96;
+  --accent-coral: #FF5A4F;
+  --accent-indigo: #696CFF;
+  --border-color: transparent;
+  --hover-state: #25262B;
+  --radius-card: 16px;
+  --radius-inner: 12px;
+}
+
+/* Base Metric Flow Styles */
+.enterprise-card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-card);
+}
+
+.enterprise-card-elevated {
+  background-color: var(--bg-elevated);
+  border-radius: var(--radius-card);
+  transition: all 0.2s ease;
+}
+
+.enterprise-card-interactive {
+  transition: all 0.2s ease;
+}
+
+.enterprise-card-interactive:hover {
+  background-color: var(--hover-state);
+}
+
+.enterprise-panel {
+  background-color: var(--bg-elevated);
+  border-radius: var(--radius-inner);
+}
+
+.enterprise-btn {
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  border-radius: var(--radius-inner);
+  transition: all 0.2s ease;
+}
+
+.enterprise-btn:hover {
+  background-color: var(--hover-state);
+}

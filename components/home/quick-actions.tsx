@@ -1,29 +1,30 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Megaphone, UserPlus, FileText, GitBranch } from "lucide-react"
+import { Megaphone, UserPlus, FileText, GitBranch, ArrowUpRight } from "lucide-react"
 
 export default function QuickActions({ workspaceId }: { workspaceId: string }) {
   const router = useRouter()
   const actions = [
-    { label: "Create Campaign", desc: "Broadcast push", icon: Megaphone, color: "hover:border-[#FE8A5C] hover:bg-[#FE8A5C]/5", href: `/campaigns/${workspaceId}/create` },
-    { label: "Add Contact", desc: "Profile ingest", icon: UserPlus, color: "hover:border-[#3CD3AD] hover:bg-[#3CD3AD]/5", href: `/contact/${workspaceId}` },
-    { label: "Create Segment", desc: "Group filters", icon: FileText, color: "hover:border-blue-400 hover:bg-blue-400/5", href: `/segments/${workspaceId}` },
-    { label: "Create Workflow", desc: "Visual automation", icon: GitBranch, color: "hover:border-[#6B7280] hover:bg-[#6B7280]/5", href: `/flow-builder/${workspaceId}/create` },
+    { label: "Create Campaign", desc: "Broadcast push", icon: Megaphone, href: `/campaigns/${workspaceId}/create`, color: "#FF5A4F" },
+    { label: "Add Contact", desc: "Profile ingest", icon: UserPlus, href: `/contact/${workspaceId}`, color: "#696CFF" },
+    { label: "Create Segment", desc: "Group filters", icon: FileText, href: `/segments/${workspaceId}`, color: "#FFB020" },
+    { label: "Create Workflow", desc: "Visual automation", icon: GitBranch, href: `/flow-builder/${workspaceId}/create`, color: "#00E5FF" },
   ]
 
   return (
-    <div className="p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-col justify-between h-full">
-      <div>
-        <h3 className="text-sm font-semibold text-white/80 tracking-tight">Quick Actions</h3>
-        <p className="text-[11px] text-[#B0B8C8] mt-1">Accelerated workflows to launch outreach sequences instantly.</p>
+    <div className="p-5 enterprise-card flex flex-col justify-between h-full">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-[16px] font-bold text-[#FFFFFF] tracking-tight">Quick Actions</h3>
       </div>
-      <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {actions.map((a) => (
-          <button key={a.label} onClick={() => router.push(a.href)} className={`p-4 rounded-2xl bg-[#08090C] border border-[#1E2230] text-left transition-all duration-300 group cursor-pointer ${a.color}`}>
-            <a.icon className="w-5 h-5 text-[#B0B8C8] group-hover:text-white mb-3 transition-colors" />
-            <p className="text-xs font-semibold text-white leading-none">{a.label}</p>
-            <p className="text-[9px] text-[#7A8499] font-mono mt-1.5 leading-none">{a.desc}</p>
+          <button key={a.label} onClick={() => router.push(a.href)} className="p-5 enterprise-panel enterprise-card-interactive text-left flex flex-col group cursor-pointer relative overflow-hidden">
+            <div className="w-10 h-10 rounded-[12px] bg-[#0D0E12] flex items-center justify-center mb-4 transition-all">
+              <a.icon className="w-5 h-5 transition-colors" style={{ color: a.color }} />
+            </div>
+            <p className="text-[13px] font-bold text-[#FFFFFF] leading-tight mb-1">{a.label}</p>
+            <p className="text-[11px] text-[#8A8D96] font-medium leading-tight">{a.desc}</p>
           </button>
         ))}
       </div>

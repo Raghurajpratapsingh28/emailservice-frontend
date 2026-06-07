@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Sidebar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
+import NavigationProgress from "@/components/dashboard/navigation-progress"
 import { useAuth } from "@/lib/auth-context"
 import { useWorkspace } from "@/lib/workspace-context"
 
@@ -30,7 +31,7 @@ export default function DashboardLayout({
   }, [workspaceId, isLoading, isAuthenticated, pathname, router])
 
   if (isLoading) {
-    return <div className="flex items-center justify-center w-screen h-screen bg-[#060709] text-white">Loading...</div>
+    return <div className="flex items-center justify-center w-screen h-screen bg-[#0D0E12] text-[#FFFFFF]">Loading...</div>
   }
 
   if (!isAuthenticated) {
@@ -38,11 +39,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex w-screen h-screen overflow-hidden bg-[#060709] text-white">
+    <div className="flex w-screen h-screen overflow-hidden bg-[#0D0E12] text-[#FFFFFF] p-3 gap-6">
+      <Suspense fallback={null}><NavigationProgress /></Suspense>
       <Sidebar />
       <div className="flex flex-col flex-1 h-full min-w-0">
         <Header />
-        <main className="flex-1 overflow-y-auto bg-[#07080A] p-6">
+        <main className="flex-1 overflow-y-auto bg-transparent pt-0 pr-3">
           {children}
         </main>
       </div>

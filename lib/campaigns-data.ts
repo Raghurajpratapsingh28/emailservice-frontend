@@ -41,14 +41,14 @@ export const MOCK_SEGMENTS = [
 ]
 
 export const STATUS_META: Record<CampaignStatus, { label: string; color: string; bg: string; border: string }> = {
-  draft:     { label: "Draft",     color: "text-zinc-400",   bg: "bg-zinc-500/10",   border: "border-zinc-500/25" },
-  scheduled: { label: "Scheduled", color: "text-blue-400",   bg: "bg-blue-500/10",   border: "border-blue-500/25" },
-  sending:   { label: "Sending",   color: "text-amber-400",  bg: "bg-amber-500/10",  border: "border-amber-500/25" },
-  sent:      { label: "Sent",      color: "text-emerald-400",bg: "bg-emerald-500/10",border: "border-emerald-500/25" },
-  paused:    { label: "Paused",    color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/25" },
-  failed:    { label: "Failed",    color: "text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/25" },
-  cancelled:  { label: "Cancelled",  color: "text-zinc-600",   bg: "bg-zinc-800/10",    border: "border-zinc-700/25" },
-  completed:  { label: "Completed",  color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/25" },
+  draft:     { label: "Draft",     color: "text-[#FFB020]", bg: "bg-[#FFB020]/10", border: "border-[#FFB020]/25" },
+  scheduled: { label: "Scheduled", color: "text-[#3CD3AD]", bg: "bg-[#3CD3AD]/10", border: "border-[#3CD3AD]/25" },
+  sending:   { label: "Sending",   color: "text-[#696CFF]", bg: "bg-[#696CFF]/10", border: "border-[#696CFF]/25" },
+  sent:      { label: "Sent",      color: "text-[#FFFFFF]", bg: "bg-[#FFFFFF]/10", border: "border-[#FFFFFF]/25" },
+  paused:    { label: "Paused",    color: "text-[#8A8D96]", bg: "bg-[#8A8D96]/10", border: "border-[#8A8D96]/25" },
+  failed:    { label: "Failed",    color: "text-[#FF5A4F]", bg: "bg-[#FF5A4F]/10", border: "border-[#FF5A4F]/25" },
+  cancelled: { label: "Cancelled", color: "text-[#444444]", bg: "bg-[#444444]/10", border: "border-[#444444]/25" },
+  completed: { label: "Completed", color: "text-[#3CD3AD]", bg: "bg-[#3CD3AD]/10", border: "border-[#3CD3AD]/25" },
 }
 
 export const initialCampaigns: Campaign[] = [

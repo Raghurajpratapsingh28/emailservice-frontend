@@ -1,43 +1,52 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Layers, Plus, ArrowUpRight } from "lucide-react"
 
-interface Props { segments: Array<{ id: string; name: string; contactCount: number }>; total: number; workspaceId: string }
+interface Segment { id: string; name: string; contactCount: number }
+interface Props { segments: Segment[]; total: number; workspaceId: string }
 
 export default function SegmentsSection({ segments, total, workspaceId }: Props) {
   const router = useRouter()
 
   return (
-    <div className="p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-col justify-between">
+    <div className="p-5 enterprise-card flex flex-col justify-between h-full">
       <div>
-        <div className="flex items-center justify-between border-b border-[#1C202C]/60 pb-4 mb-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white/80 tracking-tight">Segments</h3>
-            <p className="text-[11px] text-[#B0B8C8] mt-0.5">Top segments by contact weight.</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-[8px] bg-[#FFB020]/10 flex items-center justify-center">
+              <Layers className="w-4 h-4 text-[#FFB020]" />
+            </div>
+            <h3 className="text-[16px] font-bold text-[#FFFFFF] tracking-tight">Active Segments</h3>
           </div>
-          <div className="flex items-baseline gap-1 bg-[#12141A] px-3 py-1 rounded-xl border border-[#1E2230]">
-            <span className="text-lg font-bold font-mono text-blue-400">{total}</span>
-            <span className="text-[10px] text-[#B0B8C8] font-mono">Total</span>
-          </div>
+          <button onClick={() => router.push(`/segments/${workspaceId}`)} className="text-[12px] text-[#8A8D96] hover:text-[#FFFFFF] transition-colors flex items-center gap-1 cursor-pointer">
+            View All <ArrowUpRight className="w-3 h-3" />
+          </button>
         </div>
-        <div className="space-y-2 mt-2">
-          {segments.length === 0 && <p className="text-xs text-[#7A8499] font-mono px-1">No segments yet.</p>}
-          {segments.map((seg, idx) => (
-            <div key={seg.id} className="p-3 bg-[#08090C] hover:bg-[#11131A] border border-[#161922] rounded-xl flex items-center justify-between transition-colors">
+
+        <div className="space-y-3 mt-4">
+          {segments.length === 0 && <p className="text-[12px] text-[#8A8D96] px-1 font-medium">No segments created.</p>}
+          {segments.map((s) => (
+            <div key={s.id} className="w-full p-4 enterprise-panel enterprise-card-interactive flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-xs font-mono font-bold text-[#B0B8C8]">0{idx + 1}</span>
-                <h4 className="text-xs font-semibold text-white/95">{seg.name}</h4>
+                <div className="p-2.5 rounded-[8px] bg-[#0D0E12] shrink-0">
+                  <Layers className="w-4 h-4 text-[#FFB020]" />
+                </div>
+                <div>
+                  <h4 className="text-[13px] font-bold text-[#FFFFFF]">{s.name}</h4>
+                  <p className="text-[11px] text-[#8A8D96] font-medium mt-0.5">Filter Definition</p>
+                </div>
               </div>
-              <span className="text-[11px] font-mono font-semibold bg-blue-500/10 border border-blue-500/25 text-blue-400 px-2 py-0.5 rounded-lg">
-                {seg.contactCount.toLocaleString()} profiles
-              </span>
+              <div className="text-right">
+                <p className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Size</p>
+                <p className="text-[14px] font-bold text-[#FFFFFF] mt-0.5">{s.contactCount.toLocaleString()}</p>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      <button onClick={() => router.push(`/segments/${workspaceId}`)} className="mt-5 w-full py-2.5 bg-[#12141A] hover:bg-[#1C1F2D] border border-[#1E2230] hover:border-[#383E58] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-        <Plus className="w-4 h-4 text-blue-400" /> Manage Segments
+      <button onClick={() => router.push(`/segments/${workspaceId}`)} className="mt-6 w-full py-3 enterprise-btn text-[#FFFFFF] text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer border border-[#202126] hover:border-[#FFB020] transition-all">
+        <Plus className="w-4 h-4 text-[#FFB020]" /> Build Segment
       </button>
     </div>
   )

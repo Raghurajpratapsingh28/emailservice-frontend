@@ -94,21 +94,21 @@ export default function WorkflowsView({ workspaceId }: Props) {
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <button onClick={() => router.push("/flow-builder")} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+          <button onClick={() => router.push("/flow-builder")} className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-3 cursor-pointer">
             <ArrowLeft className="w-3 h-3" /> All Workspaces
           </button>
-          <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Visual Journeys</span>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Visual Journeys</span>
           <div className="flex items-center gap-3 mt-1.5">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white/95 leading-none">Workflows</h1>
-            <div className="flex items-baseline gap-1 bg-[#111319] border border-[#1E2230] px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-[#6B7280]">
+            <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] leading-none">Workflows</h1>
+            <div className="flex items-baseline gap-1 bg-[#18191C] border border-[#202126] px-2.5 py-0.5 rounded-full text-xs font-medium font-semibold text-[#8A8D96]">
               <span>{total}</span>
-              <span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
+              <span className="text-[9px] text-[#8A8D96] font-normal uppercase">Total</span>
             </div>
           </div>
         </div>
         <button
           onClick={() => router.push(`/flow-builder/${workspaceId}/create`)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-none transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Create Workflow
         </button>
@@ -117,13 +117,13 @@ export default function WorkflowsView({ workspaceId }: Props) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total", value: total, color: "text-white" },
-          { label: "Published", value: COUNTS.published, color: "text-emerald-400" },
-          { label: "Draft", value: COUNTS.draft, color: "text-zinc-400" },
-          { label: "Paused", value: COUNTS.paused, color: "text-orange-400" },
+          { label: "Published", value: COUNTS.published, color: "text-[#3CD3AD]" },
+          { label: "Draft", value: COUNTS.draft, color: "text-[#8A8D96]" },
+          { label: "Paused", value: COUNTS.paused, color: "text-[#FFB020]" },
         ].map(({ label, value, color }) => (
-          <div key={label} className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
-            <span className="text-[10px] font-mono text-[#7A8499] uppercase tracking-wider">{label}</span>
-            <span className={`text-xl font-bold font-mono ${color}`}>{value}</span>
+          <div key={label} className="enterprise-card p-4 flex items-center justify-between">
+            <span className="text-[10px] font-medium text-[#8A8D96] uppercase tracking-wider">{label}</span>
+            <span className={`text-xl font-semibold font-mono ${color}`}>{value}</span>
           </div>
         ))}
       </div>
@@ -144,7 +144,7 @@ export default function WorkflowsView({ workspaceId }: Props) {
 
           {workflows.some((w) => w.status === "archived") && (
             <details className="group">
-              <summary className="text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] cursor-pointer transition-colors">
+              <summary className="text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer transition-colors">
                 {workflows.filter((w) => w.status === "archived").length} archived workflow(s)
               </summary>
               <div className="mt-3">

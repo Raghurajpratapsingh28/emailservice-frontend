@@ -1,53 +1,51 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Plus, AlertCircle } from "lucide-react"
+import { GitBranch, Plus, ArrowUpRight, CheckCircle2, XCircle, PlayCircle } from "lucide-react"
 
-interface Stats { total: number; published: number; executions: { total: number; completed: number; failed: number; running: number } }
-interface Props { stats: Stats | null; workspaceId: string }
+interface Props {
+  stats: { total: number; published: number; executions: { total: number; completed: number; failed: number; running: number } } | null
+  workspaceId: string
+}
 
 export default function WorkflowsSection({ stats, workspaceId }: Props) {
   const router = useRouter()
-  const ex = stats?.executions ?? { total: 0, completed: 0, failed: 0, running: 0 }
+  const ex = stats?.executions
 
   return (
-    <div className="p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] flex flex-col justify-between">
-      <div>
-        <div className="flex items-center justify-between border-b border-[#1C202C]/60 pb-4 mb-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white/80 tracking-tight">Workflow Automations</h3>
-            <p className="text-[11px] text-[#B0B8C8] mt-0.5">Execution stats & triggers.</p>
+    <div className="p-5 enterprise-card">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-[8px] bg-[#00E5FF]/10 flex items-center justify-center">
+            <GitBranch className="w-4 h-4 text-[#00E5FF]" />
           </div>
-          <div className="flex items-baseline gap-1 bg-[#12141A] px-3 py-1 rounded-xl border border-[#1E2230]">
-            <span className="text-lg font-bold font-mono text-[#6B7280]">{stats?.published ?? 0}</span>
-            <span className="text-[10px] text-[#B0B8C8] font-mono">Active</span>
-          </div>
+          <h3 className="text-[16px] font-bold text-[#FFFFFF] tracking-tight">Active Workflows</h3>
         </div>
-        <div className="grid grid-cols-4 gap-2 text-center bg-[#08090C] rounded-2xl border border-[#161922] p-3 mb-4">
-          {[
-            { label: "Total", val: ex.total, color: "text-white/90" },
-            { label: "Completed", val: ex.completed, color: "text-emerald-400" },
-            { label: "Failed", val: ex.failed, color: "text-red-400" },
-            { label: "Running", val: ex.running, color: "text-blue-400" },
-          ].map(s => (
-            <div key={s.label} className="border-r border-[#1E2230] last:border-0">
-              <p className="text-[9px] text-[#7A8499] font-mono uppercase">{s.label}</p>
-              <p className={`text-xs font-bold font-mono mt-1 ${s.color}`}>{s.val.toLocaleString()}</p>
-            </div>
-          ))}
-        </div>
-        {ex.failed > 0 && (
-          <div className="p-3.5 bg-red-500/5 border border-red-500/20 rounded-2xl flex items-start gap-3">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-semibold text-white/95">Needs Attention</p>
-              <p className="text-[10px] text-red-400/90 font-mono mt-0.5">{ex.failed} failed execution{ex.failed !== 1 ? "s" : ""} across workflows</p>
-            </div>
-          </div>
-        )}
+        <button onClick={() => router.push(`/flow-builder/${workspaceId}`)} className="text-[12px] text-[#8A8D96] hover:text-[#FFFFFF] transition-colors flex items-center gap-1 cursor-pointer">
+          View All <ArrowUpRight className="w-3 h-3" />
+        </button>
       </div>
-      <button onClick={() => router.push(`/flow-builder/${workspaceId}/create`)} className="mt-5 w-full py-2.5 bg-[#12141A] hover:bg-[#1C1F2D] border border-[#1E2230] hover:border-[#383E58] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-        <Plus className="w-4 h-4 text-[#6B7280]" /> Create New Workflow
+      
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="p-4 enterprise-panel text-center">
+          <CheckCircle2 className="w-5 h-5 text-[#696CFF] mx-auto mb-2" />
+          <p className="text-[18px] font-bold text-[#FFFFFF]">{ex?.completed ?? 0}</p>
+          <p className="text-[10px] text-[#8A8D96] font-medium uppercase mt-1">Completed</p>
+        </div>
+        <div className="p-4 enterprise-panel text-center">
+          <XCircle className="w-5 h-5 text-[#FF5A4F] mx-auto mb-2" />
+          <p className="text-[18px] font-bold text-[#FFFFFF]">{ex?.failed ?? 0}</p>
+          <p className="text-[10px] text-[#8A8D96] font-medium uppercase mt-1">Failed</p>
+        </div>
+        <div className="p-4 enterprise-panel text-center">
+          <PlayCircle className="w-5 h-5 text-[#FFB020] mx-auto mb-2" />
+          <p className="text-[18px] font-bold text-[#FFFFFF]">{ex?.running ?? 0}</p>
+          <p className="text-[10px] text-[#8A8D96] font-medium uppercase mt-1">Running</p>
+        </div>
+      </div>
+
+      <button onClick={() => router.push(`/flow-builder/${workspaceId}/create`)} className="w-full py-3 enterprise-btn text-[#FFFFFF] text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer border border-[#202126] hover:border-[#00E5FF] transition-all">
+        <Plus className="w-4 h-4 text-[#00E5FF]" /> New Workflow
       </button>
     </div>
   )

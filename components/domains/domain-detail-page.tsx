@@ -46,8 +46,8 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
     catch (e: any) { alert(e.message) }
   }
 
-  if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
-  if (!domain) return <div className="flex items-center justify-center py-24"><p className="text-sm text-[#7A8499] font-mono">Domain not found.</p></div>
+  if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" /></div>
+  if (!domain) return <div className="flex items-center justify-center py-24"><p className="text-sm text-[#8A8D96] font-medium">Domain not found.</p></div>
 
   const d = domain
   const activeStep = stepIndex(d.status)
@@ -65,23 +65,23 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <button onClick={() => router.push(`/domains/${workspaceId}`)} className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer">
+          <button onClick={() => router.push(`/domains/${workspaceId}`)} className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-3 cursor-pointer">
             <ArrowLeft className="w-3 h-3" /> Back to Domains
           </button>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white/95 font-mono">{d.domain}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF]">{d.domain}</h1>
             <DomainStatusBadge status={d.status as any} />
           </div>
-          <p className="text-[10px] font-mono text-[#7A8499] mt-1.5">ID: {d.id}</p>
+          <p className="text-[10px] font-medium text-[#8A8D96] mt-1.5 uppercase tracking-wider">ID: {d.id}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {d.status !== "verified" && d.status !== "deleting" && d.status !== "deleted" && (
-            <button onClick={handleReverify} disabled={isReverifying} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#111319] hover:bg-[#1C1F2D] border border-blue-500/25 hover:border-blue-500/50 rounded-xl text-xs font-semibold text-blue-400 disabled:opacity-50 transition-all cursor-pointer">
+            <button onClick={handleReverify} disabled={isReverifying} className="flex items-center gap-1.5 px-3.5 py-2 bg-transparent hover:bg-[#25262B] border border-[#202126] hover:border-[#8A8D96] rounded-[12px] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] disabled:opacity-50 transition-all cursor-pointer">
               <RefreshCw className={`w-3.5 h-3.5 ${isReverifying ? "animate-spin" : ""}`} /> Re-verify
             </button>
           )}
           {d.status !== "deleting" && d.status !== "deleted" && (
-            <button onClick={handleDelete} className="flex items-center gap-1.5 px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 hover:border-red-500/50 rounded-xl text-xs font-semibold text-red-400 transition-all cursor-pointer">
+            <button onClick={handleDelete} className="flex items-center gap-1.5 px-3.5 py-2 bg-transparent hover:bg-[#25262B] border border-red-500/25 hover:border-red-500/50 rounded-[12px] text-xs font-semibold text-[#FF5A4F] transition-all cursor-pointer">
               <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>
           )}
@@ -97,8 +97,8 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
       )}
 
       {/* Progress stepper */}
-      <div className="p-5 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C]">
-        <h3 className="text-xs font-semibold text-white/80 tracking-tight mb-4">Setup Progress</h3>
+      <div className="p-5 enterprise-card">
+        <h3 className="text-xs font-semibold text-[#FFFFFF] tracking-tight mb-4">Setup Progress</h3>
         <div className="flex items-center">
           {STEPS.map((step, idx) => {
             const done = idx < activeStep
@@ -107,19 +107,19 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
             return (
               <div key={step} className="flex items-center flex-1 min-w-0">
                 <div className="flex flex-col items-center gap-1.5 flex-1">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
-                    failed ? "border-red-500 bg-red-500/10 text-red-400" :
-                    done ? "border-emerald-500 bg-emerald-500/20 text-emerald-400" :
-                    active ? "border-[#3CD3AD] bg-[#3CD3AD]/10 text-[#3CD3AD]" :
-                    "border-[#1E2230] bg-[#08090C] text-[#7A8499]"
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                    failed ? "border-[#FF5A4F] bg-[#FF5A4F]/10 text-[#FF5A4F]" :
+                    done ? "border-[#3CD3AD] bg-[#3CD3AD]/10 text-[#3CD3AD]" :
+                    active ? "border-[#696CFF] bg-[#696CFF]/10 text-[#696CFF]" :
+                    "border-[#202126] bg-[#0D0E12] text-[#8A8D96]"
                   }`}>
                     {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : idx + 1}
                   </div>
-                  <span className={`text-[9px] font-mono text-center leading-tight ${
-                    failed ? "text-red-400" : done ? "text-emerald-400" : active ? "text-[#3CD3AD]" : "text-[#7A8499]"
+                  <span className={`text-[9px] font-medium text-center uppercase tracking-wider leading-tight ${
+                    failed ? "text-[#FF5A4F]" : done ? "text-[#3CD3AD]" : active ? "text-[#696CFF]" : "text-[#8A8D96]"
                   }`}>{step}</span>
                 </div>
-                {idx < STEPS.length - 1 && <div className={`h-px flex-1 mx-1 mb-5 ${done ? "bg-emerald-500/40" : "bg-[#1E2230]"}`} />}
+                {idx < STEPS.length - 1 && <div className={`h-px flex-1 mx-1 mb-5 ${done ? "bg-[#3CD3AD]/40" : "bg-[#202126]"}`} />}
               </div>
             )
           })}
@@ -128,17 +128,17 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* DNS Records */}
-        <div className="xl:col-span-2 p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C]">
+        <div className="xl:col-span-2 p-6 enterprise-card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-semibold text-white/80 tracking-tight">DNS Records to Publish</h3>
-            <span className="text-[9px] font-mono text-[#7A8499]">Add these to your DNS provider</span>
+            <h3 className="text-xs font-semibold text-[#FFFFFF] tracking-tight">DNS Records to Publish</h3>
+            <span className="text-[9px] font-medium uppercase tracking-wider text-[#8A8D96]">Add these to your DNS provider</span>
           </div>
-          {d.dns ? <DnsRecordsTable dns={d.dns} /> : <p className="text-xs text-[#7A8499] font-mono">DNS records not available.</p>}
+          {d.dns ? <DnsRecordsTable dns={d.dns} /> : <p className="text-xs text-[#8A8D96] font-medium">DNS records not available.</p>}
         </div>
 
         {/* Verification status */}
-        <div className="p-6 rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] h-fit space-y-4">
-          <h3 className="text-xs font-semibold text-white/80 tracking-tight">Verification Details</h3>
+        <div className="p-6 enterprise-card h-fit space-y-4">
+          <h3 className="text-xs font-semibold text-[#FFFFFF] tracking-tight">Verification Details</h3>
           {[
             { label: "Status", value: <DomainStatusBadge status={d.status as any} /> },
             { label: "SES Identity", value: d.sesIdentity },
@@ -149,9 +149,9 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
             { label: "Created", value: new Date(d.createdAt).toLocaleString() },
           ].map(({ label, value }) => (
             <div key={label}>
-              <p className="text-[9px] font-mono text-[#7A8499] uppercase tracking-wider mb-0.5">{label}</p>
+              <p className="text-[9px] font-medium text-[#8A8D96] uppercase tracking-wider mb-0.5">{label}</p>
               {typeof value === "string"
-                ? <p className="text-xs text-white/80 font-mono break-all">{value}</p>
+                ? <p className="text-xs text-[#FFFFFF] font-medium break-all">{value}</p>
                 : value}
             </div>
           ))}
@@ -159,10 +159,10 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
           {/* DKIM tokens */}
           {d.dkimTokens?.length > 0 && (
             <div>
-              <p className="text-[9px] font-mono text-[#7A8499] uppercase tracking-wider mb-1.5">DKIM Tokens</p>
+              <p className="text-[9px] font-medium text-[#8A8D96] uppercase tracking-wider mb-1.5">DKIM Tokens</p>
               <div className="space-y-1">
                 {d.dkimTokens.map((t) => (
-                  <p key={t} className="text-[10px] font-mono text-[#B0B8C8] bg-[#08090C] border border-[#1E2230] px-2 py-1 rounded-lg break-all">{t}</p>
+                  <p key={t} className="text-[10px] font-medium text-[#FFFFFF] bg-[#25262B] border border-[#202126] px-2 py-1 rounded-[8px] break-all">{t}</p>
                 ))}
               </div>
             </div>

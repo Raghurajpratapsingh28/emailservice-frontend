@@ -61,22 +61,22 @@ export default function SettingsView({ workspaceId: propWorkspaceId }: { workspa
   }
 
   if (isLoading || !settings) {
-    return <div className="text-white">Loading...</div>
+    return <div className="text-[#FFFFFF]">Loading...</div>
   }
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
       {/* Header */}
       <div>
-        <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Workspace Administration</span>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">Settings</h1>
+        <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Workspace Administration</span>
+        <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF] mt-1">Settings</h1>
       </div>
 
       {/* Status banner */}
       {workspace?.status === "inactive" && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-400 font-semibold">Workspace is deactivated. All mutating operations are blocked.</p>
+        <div className="flex items-start gap-3 p-4 rounded-[12px] bg-[#FFB020]/10 border border-[#FFB020]/20">
+          <AlertTriangle className="w-4 h-4 text-[#FFB020] shrink-0 mt-0.5" />
+          <p className="text-xs text-[#FFB020] font-semibold">Workspace is deactivated. All mutating operations are blocked.</p>
         </div>
       )}
 
@@ -87,12 +87,12 @@ export default function SettingsView({ workspaceId: propWorkspaceId }: { workspa
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer text-left ${
+              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-[12px] text-xs font-semibold transition-all cursor-pointer text-left ${
                 tab === id
                   ? id === "danger"
-                    ? "bg-red-500/10 border border-red-500/20 text-red-400"
-                    : "bg-[#6B7280]/10 border border-[#6B7280]/25 text-[#9CA3AF]"
-                  : "text-[#B0B8C8] hover:bg-[#12141A] hover:text-white"
+                    ? "bg-[#FF5A4F]/10 border border-[#FF5A4F]/20 text-[#FF5A4F]"
+                    : "bg-[#8A8D96]/10 border border-[#8A8D96]/20 text-[#FFFFFF]"
+                  : "text-[#8A8D96] hover:bg-[#18191C] hover:text-[#FFFFFF]"
               }`}
             >
               <Icon className="w-3.5 h-3.5 shrink-0" />

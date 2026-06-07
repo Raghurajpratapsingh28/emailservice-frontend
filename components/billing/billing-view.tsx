@@ -101,7 +101,7 @@ export default function BillingView() {
   }
 
   if (isLoading || !subscription || !usage) {
-    return <div className="text-white">Loading...</div>
+    return <div className="text-[#FFFFFF]">Loading...</div>
   }
 
   const period = `${new Date(usage.periodStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${new Date(usage.periodEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
@@ -115,8 +115,8 @@ export default function BillingView() {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
       <div>
-        <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Subscription & Payments</span>
-        <h1 className="text-3xl font-extrabold tracking-tight text-white/95 mt-1">Billing</h1>
+        <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Subscription & Payments</span>
+        <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF] mt-1">Billing</h1>
       </div>
 
       <CurrentPlanCard subscription={subscription} onChangePlan={() => setCancelOpen(false)} onCancel={() => setCancelOpen(true)} onResume={handleResume} onUpgrade={() => setChangePlanTarget("growth")} onManageBilling={handleManageBilling} />

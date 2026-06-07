@@ -174,31 +174,31 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
           {propWorkspaceId && (
             <button
               onClick={() => router.push("/segments")}
-              className="flex items-center gap-1.5 text-[10px] font-mono text-[#7A8499] hover:text-[#B0B8C8] transition-colors mb-3 cursor-pointer"
+              className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-2 cursor-pointer"
             >
               <ArrowLeft className="w-3 h-3" /> All Workspaces
             </button>
           )}
-          <span className="text-[10px] text-[#7A8499] font-mono uppercase tracking-wider">Audience Builder</span>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Audience Builder</span>
           <div className="flex items-center gap-3 mt-1.5">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white/95 leading-none">Segments</h1>
-            <div className="flex items-baseline gap-1 bg-[#111319] border border-[#1E2230] px-2.5 py-0.5 rounded-full text-xs font-mono font-bold text-[#6B7280]">
-              <span>{total}</span>
-              <span className="text-[9px] text-[#7A8499] font-normal uppercase">Total</span>
+            <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] leading-none">Segments</h1>
+            <div className="flex items-baseline gap-1 bg-[#18191C] border border-[#202126] px-2.5 py-0.5 rounded-full text-xs font-medium text-[#8A8D96]">
+              <span className="text-[#FFFFFF] font-bold">{total}</span>
+              <span className="text-[9px] uppercase">Total</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex bg-[#12141A] p-1 rounded-xl border border-[#1E222D]">
+          <div className="flex bg-[#0D0E12] p-1 rounded-[12px] border border-[#202126]">
             {(["all", "dynamic", "static"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                className={`px-3 py-1.5 text-[10px] font-mono font-semibold rounded-lg transition-all duration-200 capitalize cursor-pointer ${
+                className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-all duration-200 capitalize cursor-pointer ${
                   filterType === t
-                    ? "bg-[#252833] text-white shadow-md shadow-black/20"
-                    : "text-[#767E8C] hover:text-white"
+                    ? "bg-[#25262B] text-[#FFFFFF]"
+                    : "text-[#8A8D96] hover:text-[#FFFFFF]"
                 }`}
               >
                 {t}
@@ -208,9 +208,9 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
 
           <button
             onClick={() => { setEditingSegment(null); setIsModalOpen(true) }}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-[#FFFFFF]" />
             <span>Create Segment</span>
           </button>
         </div>
@@ -219,14 +219,14 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total", value: segments.length, color: "text-white" },
-          { label: "Ready", value: segments.filter((s) => s.status === "ready").length, color: "text-emerald-400" },
-          { label: "Computing", value: segments.filter((s) => s.status === "computing" || s.status === "pending").length, color: "text-blue-400" },
-          { label: "Failed", value: segments.filter((s) => s.status === "failed").length, color: "text-red-400" },
+          { label: "Total", value: segments.length, color: "text-[#FFFFFF]" },
+          { label: "Ready", value: segments.filter((s) => s.status === "ready").length, color: "text-[#3CD3AD]" },
+          { label: "Computing", value: segments.filter((s) => s.status === "computing" || s.status === "pending").length, color: "text-[#696CFF]" },
+          { label: "Failed", value: segments.filter((s) => s.status === "failed").length, color: "text-[#FF5A4F]" },
         ].map(({ label, value, color }) => (
-          <div key={label} className="p-4 rounded-2xl bg-[#0F1016]/95 border border-[#1C202C] flex items-center justify-between">
-            <span className="text-[10px] font-mono text-[#7A8499] uppercase tracking-wider">{label}</span>
-            <span className={`text-xl font-bold font-mono ${color}`}>{value}</span>
+          <div key={label} className="enterprise-card p-5 flex items-center justify-between h-full">
+            <span className="text-[10px] font-medium text-[#8A8D96] uppercase tracking-wider">{label}</span>
+            <span className={`text-xl font-bold ${color}`}>{value}</span>
           </div>
         ))}
       </div>
@@ -234,14 +234,14 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
       {/* Loading / Error / Table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" />
+          <Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" />
         </div>
       ) : error ? (
-        <div className="p-8 rounded-3xl bg-[#0F1016]/95 border border-red-500/30 text-center">
+        <div className="p-8 enterprise-card border-red-500/30 text-center">
           <p className="text-sm text-red-400">{error}</p>
           <button
             onClick={() => loadSegments(workspaceId)}
-            className="mt-3 text-xs text-[#6B7280] underline hover:text-white cursor-pointer"
+            className="mt-3 text-xs text-[#8A8D96] underline hover:text-white cursor-pointer"
           >
             Retry
           </button>
@@ -257,9 +257,9 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
       )}
 
       {!isLoading && !error && filtered.length > 0 && (
-        <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8499] px-1">
+        <div className="flex items-center justify-between text-[11px] font-medium text-[#8A8D96] px-1">
           <span>Showing {filtered.length} of {segments.length} segments</span>
-          <span>Page 1 of 1</span>
+          <span className="text-[#FFFFFF]">Page 1 of 1</span>
         </div>
       )}
 

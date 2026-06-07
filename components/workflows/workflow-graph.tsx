@@ -8,10 +8,10 @@ import {
 import { Zap, Mail, Clock, Square, Plus, Trash2, X, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react"
 
 const NODE_META: Record<NodeType, { icon: React.ElementType; color: string; bg: string; label: string }> = {
-  trigger: { icon: Zap,    color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/30",   label: "Trigger" },
-  email:   { icon: Mail,   color: "text-[#9CA3AF]",   bg: "bg-[#6B7280]/10 border-[#6B7280]/30",  label: "Email" },
-  delay:   { icon: Clock,  color: "text-blue-400",    bg: "bg-blue-500/10 border-blue-500/30",     label: "Delay" },
-  end:     { icon: Square, color: "text-zinc-500",    bg: "bg-zinc-800/20 border-zinc-700/30",     label: "End" },
+  trigger: { icon: Zap,    color: "text-[#FFB020]",   bg: "bg-[#FFB020]/5 border-[#FFB020]/20",   label: "Trigger" },
+  email:   { icon: Mail,   color: "text-[#8A8D96]",   bg: "bg-[#8A8D96]/5 border-[#8A8D96]/20",  label: "Email" },
+  delay:   { icon: Clock,  color: "text-[#696CFF]",    bg: "bg-[#696CFF]/5 border-[#696CFF]/20",     label: "Delay" },
+  end:     { icon: Square, color: "text-[#8A8D96]",    bg: "bg-[#18191C] border-[#202126]",     label: "End" },
 }
 
 const ADD_OPTIONS: { type: NodeType; label: string }[] = [
@@ -71,9 +71,9 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
       <div className="flex-1 flex flex-col items-center py-4 space-y-0 overflow-y-auto">
         {/* Validation summary */}
         {!readOnly && errors.length > 0 && (
-          <div className="w-full max-w-xs mb-4 p-3 rounded-2xl bg-red-500/5 border border-red-500/20 space-y-1">
+          <div className="w-full max-w-xs mb-4 p-3 rounded-[12px] bg-[#FF5A4F]/5 border border-[#FF5A4F]/20 space-y-1">
             {errors.map((e) => (
-              <div key={e} className="flex items-start gap-1.5 text-[10px] text-red-400 font-mono">
+              <div key={e} className="flex items-start gap-1.5 text-[10px] text-[#FF5A4F] font-medium">
                 <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" /> {e}
               </div>
             ))}
@@ -92,31 +92,31 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
               {/* Add step button above (not before trigger) */}
               {!readOnly && idx > 0 && idx < nodes.length && (
                 <div className="relative flex flex-col items-center">
-                  <div className="w-px h-4 bg-[#1C202C]" />
+                  <div className="w-px h-4 bg-[#202126]" />
                   {addingAt === idx ? (
-                    <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[#0F1016] border border-[#1C202C] shadow-lg">
+                    <div className="flex items-center gap-1.5 p-1.5 rounded-[12px] bg-[#0D0E12] border border-[#202126] shadow-lg">
                       {ADD_OPTIONS.map((opt) => (
                         <button
                           key={opt.type}
                           onClick={() => insertAt(idx, opt.type)}
-                          className="px-2.5 py-1 rounded-lg bg-[#12141A] hover:bg-[#1C1F2D] border border-[#1E2230] text-[10px] font-mono text-[#B0B8C8] hover:text-white transition-all cursor-pointer"
+                          className="px-2.5 py-1 rounded-[8px] bg-transparent hover:bg-[#25262B] border border-transparent hover:border-[#202126] text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer"
                         >
                           {opt.label}
                         </button>
                       ))}
-                      <button onClick={() => setAddingAt(null)} className="p-1 text-[#7A8499] hover:text-white cursor-pointer">
+                      <button onClick={() => setAddingAt(null)} className="p-1 text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
                   ) : (
                     <button
                       onClick={() => setAddingAt(idx)}
-                      className="w-6 h-6 rounded-full bg-[#12141A] border border-[#1E2230] hover:border-[#6B7280]/50 flex items-center justify-center text-[#7A8499] hover:text-[#9CA3AF] transition-all cursor-pointer"
+                      className="w-6 h-6 rounded-full bg-transparent border border-[#202126] hover:border-[#8A8D96] flex items-center justify-center text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
                   )}
-                  <div className="w-px h-4 bg-[#1C202C]" />
+                  <div className="w-px h-4 bg-[#202126]" />
                 </div>
               )}
               {idx === 0 && <div className="w-px h-4 bg-transparent" />}
@@ -124,32 +124,32 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
               {/* Node card */}
               <button
                 onClick={() => !readOnly && setSelectedId(isSelected ? null : node.id)}
-                className={`w-full p-3.5 rounded-2xl border transition-all text-left ${
+                className={`w-full p-4 rounded-[12px] border transition-all text-left ${
                   isSelected
-                    ? "border-[#6B7280]/60 bg-[#6B7280]/5 shadow-lg shadow-[#6B7280]/10"
-                    : `${meta.bg} hover:border-opacity-60`
+                    ? "border-[#696CFF] bg-[#696CFF]/5 shadow-none"
+                    : `${meta.bg} hover:border-[#8A8D96]`
                 } ${readOnly ? "cursor-default" : "cursor-pointer"}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className={`p-1.5 rounded-lg bg-[#08090C] border border-[#1E2230]`}>
+                    <div className={`p-2 rounded-[8px] bg-transparent border border-[#202126]`}>
                       <Icon className={`w-3.5 h-3.5 ${meta.color}`} />
                     </div>
                     <div>
-                      <p className={`text-[9px] font-mono font-semibold uppercase tracking-wider ${meta.color}`}>{meta.label}</p>
-                      <p className="text-xs font-semibold text-white/90 mt-0.5 truncate max-w-[160px]">{nodeLabel(node)}</p>
+                      <p className={`text-[9px] font-medium font-semibold uppercase tracking-wider ${meta.color}`}>{meta.label}</p>
+                      <p className="text-xs font-semibold text-[#FFFFFF] mt-0.5 truncate max-w-[160px]">{nodeLabel(node)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {hasErr ? (
-                      <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                      <AlertCircle className="w-3.5 h-3.5 text-[#FF5A4F]" />
                     ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/50" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#3CD3AD]" />
                     )}
                     {canDelete && (
                       <button
                         onClick={(e) => { e.stopPropagation(); removeNode(node.id) }}
-                        className="p-1 rounded-lg hover:bg-red-500/10 text-[#7A8499] hover:text-red-400 transition-all cursor-pointer"
+                        className="p-1 rounded-[8px] hover:bg-[#FF5A4F]/10 text-[#8A8D96] hover:text-[#FF5A4F] transition-all cursor-pointer"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -160,7 +160,7 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
 
               {/* Connector line after node (not after last) */}
               {idx < nodes.length - 1 && !(!readOnly && idx > 0) && (
-                <div className="w-px h-4 bg-[#1C202C]" />
+                <div className="w-px h-4 bg-[#202126]" />
               )}
             </div>
           )
@@ -171,7 +171,7 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
           <div className="mt-4">
             <button
               onClick={() => setAddingAt(nodes.length - 1)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#12141A] hover:bg-[#1C1F2D] border border-[#1E2230] hover:border-[#383E58] text-[10px] font-mono text-[#B0B8C8] hover:text-white transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-transparent hover:bg-[#25262B] border border-[#202126] hover:border-[#8A8D96] text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer"
             >
               <Plus className="w-3 h-3" /> Add Step
             </button>
@@ -181,12 +181,12 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
 
       {/* Config panel */}
       {!readOnly && selectedNode && (
-        <div className="w-72 shrink-0 p-4 rounded-2xl bg-[#08090C] border border-[#1C202C] space-y-4 overflow-y-auto">
+        <div className="w-72 shrink-0 p-4 rounded-[12px] bg-[#0D0E12] border border-[#202126] space-y-4 overflow-y-auto">
           <div className="flex items-center justify-between">
-            <span className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${NODE_META[selectedNode.type].color}`}>
+            <span className={`text-[10px] font-medium font-semibold uppercase tracking-wider ${NODE_META[selectedNode.type].color}`}>
               Configure {NODE_META[selectedNode.type].label}
             </span>
-            <button onClick={() => setSelectedId(null)} className="p-1 text-[#7A8499] hover:text-white cursor-pointer">
+            <button onClick={() => setSelectedId(null)} className="p-1 text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -201,7 +201,7 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
             <DelayPanel node={selectedNode} onChange={(c) => updateNode(selectedNode.id, c)} />
           )}
           {selectedNode.type === "end" && (
-            <p className="text-xs text-[#7A8499] font-mono">No configuration needed. This marks the end of the workflow.</p>
+            <p className="text-xs text-[#8A8D96] font-medium">No configuration needed. This marks the end of the workflow.</p>
           )}
         </div>
       )}
@@ -277,7 +277,7 @@ function DelayPanel({ node, onChange }: { node: WorkflowNode; onChange: (c: Dela
 function PanelField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[9px] font-mono font-semibold text-[#7A8499] uppercase tracking-wider">{label}</label>
+      <label className="text-[9px] font-medium font-semibold text-[#8A8D96] uppercase tracking-wider">{label}</label>
       {children}
     </div>
   )
@@ -286,15 +286,15 @@ function PanelField({ label, children }: { label: string; children: React.ReactN
 function SelectWrap({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
     <div className="relative flex-1">
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none pl-2.5 pr-7 py-2 bg-[#0F1016] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white/90 cursor-pointer focus:outline-none transition-colors">
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full appearance-none pl-2.5 pr-7 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] cursor-pointer focus:outline-none transition-colors">
         {children}
       </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#7A8499] pointer-events-none" />
+      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#8A8D96] pointer-events-none" />
     </div>
   )
 }
 
-const inputCls = "w-full px-2.5 py-2 bg-[#0F1016] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white placeholder-[#7A8499] focus:outline-none transition-colors"
+const inputCls = "w-full px-2.5 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors"
 
 // Re-export TriggerType for use in panel
 type TriggerType = TriggerConfig["triggerType"]

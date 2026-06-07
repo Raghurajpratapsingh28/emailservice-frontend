@@ -33,19 +33,19 @@ export default function WorkspaceTab({ workspace, workspaceId, onUpdate }: { wor
         </Field>
         <Field label="Slug">
           <input value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} className={inputCls} />
-          <p className="text-[9px] text-[#7A8499] font-mono mt-1">app.engageiq.com/{slug}</p>
+          <p className="text-[9px] text-[#8A8D96] font-medium uppercase tracking-wider mt-1">app.engageiq.com/{slug}</p>
         </Field>
         <Field label="Plan">
-          <div className="text-xs text-[#B0B8C8] font-mono">{workspace.plan}</div>
+          <div className="text-xs text-[#8A8D96] font-medium uppercase tracking-wider">{workspace.plan}</div>
         </Field>
         <Field label="Status">
-          <div className={`inline-flex text-[9px] font-mono px-2 py-0.5 rounded-lg ${workspace.status === "active" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : "bg-amber-500/10 border border-amber-500/20 text-amber-400"}`}>
+          <div className={`inline-flex text-[9px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-lg ${workspace.status === "active" ? "bg-[#3CD3AD]/10 border border-[#3CD3AD]/20 text-[#3CD3AD]" : "bg-[#FFB020]/10 border border-[#FFB020]/20 text-[#FFB020]"}`}>
             {workspace.status}
           </div>
         </Field>
       </Section>
 
-      <button onClick={handleSave} disabled={isLoading} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer disabled:opacity-50">
+      <button onClick={handleSave} disabled={isLoading} className="flex items-center gap-2 px-5 py-2.5 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-lg shadow-[#696CFF]/15 transition-all cursor-pointer disabled:opacity-50">
         <Save className="w-3.5 h-3.5" /> {isLoading ? "Saving..." : "Save Changes"}
       </button>
     </div>
@@ -55,7 +55,7 @@ export default function WorkspaceTab({ workspace, workspaceId, onUpdate }: { wor
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-semibold text-white/80 tracking-tight border-b border-[#1C202C] pb-2">{title}</h3>
+      <h3 className="text-xs font-semibold text-[#FFFFFF]/80 tracking-tight border-b border-[#202126] pb-2">{title}</h3>
       {children}
     </div>
   )
@@ -64,10 +64,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-white/80 tracking-tight block">{label}</label>
+      <label className="text-xs font-semibold text-[#FFFFFF]/80 tracking-tight block">{label}</label>
       {children}
     </div>
   )
 }
 
-const inputCls = "w-full px-3.5 py-2.5 bg-[#08090C] border border-[#1E2230] hover:border-[#383E58] focus:border-[#6B7280] rounded-xl text-xs text-white placeholder-[#7A8499] focus:outline-none transition-colors"
+const inputCls = "w-full px-3.5 py-2.5 bg-[#18191C] border border-[#202126] hover:border-[#696CFF] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors"

@@ -22,22 +22,21 @@ export default function PlanCard({ subscription, workspaceId }: Props) {
   }
 
   return (
-    <div className="p-6 rounded-3xl bg-gradient-to-b from-[#111318] to-[#0A0713] border border-[#1F2937] flex flex-col justify-between relative overflow-hidden shadow-lg shadow-[#6B7280]/5">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#6B7280]/10 blur-3xl rounded-full pointer-events-none" />
-      <div className="flex items-center justify-between z-10">
-        <span className="text-[10px] text-[#9CA3AF] font-mono uppercase tracking-widest">Active Plan</span>
-        <span className="bg-[#6B7280]/20 border border-[#6B7280]/40 text-[#D1D5DB] text-[8px] font-mono font-bold px-2 py-0.5 rounded uppercase">{interval}</span>
+    <div className="p-5 enterprise-card flex flex-col justify-between h-full">
+      <div className="flex items-center justify-between">
+        <span className="text-[12px] text-[#8A8D96] font-medium tracking-wide">Active Plan</span>
+        <span className="bg-[#696CFF]/10 text-[#696CFF] text-[10px] font-bold px-3 py-1 rounded-[12px] uppercase">{interval}</span>
       </div>
-      <div className="mt-4 z-10">
-        <h3 className="text-2xl font-serif text-white font-light tracking-tight capitalize">{plan} Plan</h3>
-        <div className="flex items-center gap-1.5 text-xs text-[#B0B8C8] mt-1.5">
-          <Calendar className="w-3.5 h-3.5 text-[#9CA3AF]" />
-          <span>{cancelPending ? "Cancels" : "Renews"}: <span className="font-mono text-white/95">{renewal}</span></span>
+      <div className="mt-4">
+        <h3 className="text-3xl font-sans text-[#FFFFFF] font-bold tracking-tight capitalize">{plan} Plan</h3>
+        <div className="flex items-center gap-1.5 text-sm text-[#8A8D96] mt-2">
+          <Calendar className="w-4 h-4 text-[#8A8D96]" />
+          <span>{cancelPending ? "Cancels" : "Renews"}: <span className="text-[#FFFFFF] font-medium">{renewal}</span></span>
         </div>
-        {cancelPending && <p className="text-[10px] text-amber-400 font-mono mt-1">Cancellation pending at period end</p>}
+        {cancelPending && <p className="text-[11px] text-[#FF5A4F] font-medium mt-1">Cancellation pending at period end</p>}
       </div>
-      <button onClick={handlePortal} className="mt-5 w-full py-2.5 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-white rounded-xl text-xs font-semibold shadow-md transition-all cursor-pointer z-10 flex items-center justify-center gap-2">
-        Manage Subscription <Sparkles className="w-3.5 h-3.5" />
+      <button onClick={handlePortal} className="mt-6 w-full py-3 bg-[#696CFF] hover:bg-[#5A5CE6] rounded-[16px] text-[#FFFFFF] text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-colors">
+        Manage Subscription <Sparkles className="w-4 h-4 text-white" />
       </button>
     </div>
   )

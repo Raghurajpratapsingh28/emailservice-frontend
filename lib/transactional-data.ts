@@ -37,17 +37,17 @@ export type TransactionalSend = {
 export const VERIFIED_DOMAINS = ["hello@engageiq.com", "noreply@engageiq.com", "outreach@engageiq.com"]
 
 export const SEND_STATUS_META: Record<SendStatus, { label: string; cls: string; spinner?: boolean }> = {
-  queued:  { label: "Queued",  cls: "bg-zinc-500/10 border-zinc-500/25 text-zinc-400" },
-  sending: { label: "Sending", cls: "bg-blue-500/10 border-blue-500/25 text-blue-400", spinner: true },
-  sent:    { label: "Sent",    cls: "bg-emerald-500/10 border-emerald-500/25 text-emerald-400" },
-  failed:  { label: "Failed",  cls: "bg-red-500/10 border-red-500/25 text-red-400" },
-  bounced: { label: "Bounced", cls: "bg-orange-500/10 border-orange-500/25 text-orange-400" },
+  queued:  { label: "Queued",  cls: "text-[#8A8D96]" },
+  sending: { label: "Sending", cls: "text-[#696CFF]", spinner: true },
+  sent:    { label: "Sent",    cls: "text-[#3CD3AD]" },
+  failed:  { label: "Failed",  cls: "text-[#FF5A4F]" },
+  bounced: { label: "Bounced", cls: "text-[#FFB020]" },
 }
 
 export const TEMPLATE_STATUS_META: Record<TemplateStatus, { label: string; cls: string }> = {
-  draft:     { label: "Draft",     cls: "bg-zinc-500/10 border-zinc-500/25 text-zinc-400" },
-  published: { label: "Published", cls: "bg-emerald-500/10 border-emerald-500/25 text-emerald-400" },
-  archived:  { label: "Archived",  cls: "bg-zinc-800/10 border-zinc-700/25 text-zinc-600" },
+  draft:     { label: "Draft",     cls: "text-[#8A8D96]" },
+  published: { label: "Published", cls: "text-[#3CD3AD]" },
+  archived:  { label: "Archived",  cls: "text-zinc-600 line-through" },
 }
 
 const BASE_STYLES = `

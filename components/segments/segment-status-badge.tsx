@@ -2,10 +2,10 @@ import { SegmentStatus, SegmentType } from "@/lib/segments-data"
 import { Loader2 } from "lucide-react"
 
 const STATUS_STYLES: Record<SegmentStatus, string> = {
-  pending: "bg-amber-500/10 border-amber-500/25 text-amber-400",
-  computing: "bg-blue-500/10 border-blue-500/25 text-blue-400",
-  ready: "bg-emerald-500/10 border-emerald-500/25 text-emerald-400",
-  failed: "bg-red-500/10 border-red-500/25 text-red-400",
+  pending: "bg-[#696CFF]/10 border-[#696CFF]/25 text-[#696CFF]",
+  computing: "bg-[#696CFF]/10 border-[#696CFF]/25 text-[#696CFF]",
+  ready: "bg-[#3CD3AD]/10 border-[#3CD3AD]/25 text-[#3CD3AD]",
+  failed: "bg-[#FF5A4F]/10 border-[#FF5A4F]/25 text-[#FF5A4F]",
 }
 
 const STATUS_LABELS: Record<SegmentStatus, string> = {
@@ -16,13 +16,13 @@ const STATUS_LABELS: Record<SegmentStatus, string> = {
 }
 
 const TYPE_STYLES: Record<SegmentType, string> = {
-  static: "bg-zinc-500/10 border-zinc-500/25 text-zinc-400",
-  dynamic: "bg-[#6B7280]/10 border-[#6B7280]/25 text-[#9CA3AF]",
+  static: "bg-[#8A8D96]/10 border-[#8A8D96]/25 text-[#8A8D96]",
+  dynamic: "bg-[#00E5FF]/10 border-[#00E5FF]/25 text-[#00E5FF]",
 }
 
 export function SegmentStatusBadge({ status }: { status: SegmentStatus }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-mono font-semibold px-2 py-0.5 border rounded-full uppercase ${STATUS_STYLES[status]}`}>
+    <span className={`inline-flex items-center gap-1 text-[9px] font-medium px-2 py-0.5 border rounded-full uppercase ${STATUS_STYLES[status]}`}>
       {status === "computing" && <Loader2 className="w-2.5 h-2.5 animate-spin" />}
       {STATUS_LABELS[status]}
     </span>
@@ -31,7 +31,7 @@ export function SegmentStatusBadge({ status }: { status: SegmentStatus }) {
 
 export function SegmentTypeBadge({ type }: { type: SegmentType }) {
   return (
-    <span className={`inline-flex items-center text-[9px] font-mono font-semibold px-2 py-0.5 border rounded-full uppercase ${TYPE_STYLES[type]}`}>
+    <span className={`inline-flex items-center text-[9px] font-medium px-2 py-0.5 border rounded-full uppercase ${TYPE_STYLES[type]}`}>
       {type}
     </span>
   )

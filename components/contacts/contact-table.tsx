@@ -30,22 +30,22 @@ export default function ContactTable({
   const endIndex = Math.min(startIndex + pageSize, totalItems)
   const paginatedContacts = contacts.slice(startIndex, endIndex)
 
-  const getStageStyle = (stage: string) => {
-    switch (stage) {
-      case "customer":
-        return "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"
-      case "prospect":
-        return "bg-zinc-500/10 border-zinc-500/25 text-zinc-400"
-      case "lead":
-        return "bg-blue-500/10 border-blue-500/25 text-blue-400"
-      case "churned":
-        return "bg-red-500/10 border-red-500/25 text-red-400"
-      case "unqualified":
-        return "bg-amber-500/10 border-amber-500/25 text-amber-400"
-      default:
-        return "bg-zinc-500/10 border-zinc-500/25 text-zinc-400"
+    const getStageStyle = (stage: string) => {
+      switch (stage) {
+        case "customer":
+          return "bg-[#3CD3AD]/10 border-[#3CD3AD]/25 text-[#3CD3AD]"
+        case "prospect":
+          return "bg-[#696CFF]/10 border-[#696CFF]/25 text-[#696CFF]"
+        case "lead":
+          return "bg-[#00E5FF]/10 border-[#00E5FF]/25 text-[#00E5FF]"
+        case "churned":
+          return "bg-[#FF5A4F]/10 border-[#FF5A4F]/25 text-[#FF5A4F]"
+        case "unqualified":
+          return "bg-[#FFB020]/10 border-[#FFB020]/25 text-[#FFB020]"
+        default:
+          return "bg-[#8A8D96]/10 border-[#8A8D96]/25 text-[#8A8D96]"
+      }
     }
-  }
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -54,12 +54,12 @@ export default function ContactTable({
   }
 
   return (
-    <div className="rounded-3xl bg-[#0F1016]/95 border border-[#1C202C] overflow-hidden select-none font-sans text-white">
+    <div className="enterprise-card rounded-[16px] bg-[#18191C] border-[#202126] overflow-hidden select-none font-sans text-white">
       {/* Table grid wrapper */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#1C202C] bg-[#090A0E] text-[10px] text-[#7A8499] uppercase font-mono tracking-wider">
+            <tr className="border-b border-[#202126] bg-[#0D0E12] text-[10px] text-[#8A8D96] uppercase font-medium tracking-wider">
               <th className="p-4 pl-6">Email / Contact</th>
               <th className="p-4">Name</th>
               <th className="p-4">Phone</th>
@@ -71,30 +71,30 @@ export default function ContactTable({
               <th className="p-4 pr-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1C202C]/60 text-xs">
+          <tbody className="divide-y divide-[#202126] text-xs">
             {paginatedContacts.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-[#B0B8C8]">
+                <td colSpan={9} className="p-8 text-center text-[#8A8D96]">
                   No matching contacts found in database. Try adjusting your filters.
                 </td>
               </tr>
             ) : (
               paginatedContacts.map((contact) => (
-                <tr key={contact.id} className="hover:bg-[#12141B] transition-colors duration-300">
+                <tr key={contact.id} className="hover:bg-[#25262B] transition-colors duration-300">
                   {/* Email */}
-                  <td className="p-4 pl-6 font-medium text-white/95">{contact.email}</td>
+                  <td className="p-4 pl-6 font-medium text-[#FFFFFF]">{contact.email}</td>
 
                   {/* Name */}
-                  <td className="p-4 text-[#A7ABB3]">
+                  <td className="p-4 text-[#8A8D96]">
                     {contact.firstName} {contact.lastName}
                   </td>
 
                   {/* Phone */}
-                  <td className="p-4 font-mono text-[#7A8499]">{contact.phone || "—"}</td>
+                  <td className="p-4 font-medium text-[#8A8D96]">{contact.phone || "—"}</td>
 
                   {/* Lifecycle Stage */}
                   <td className="p-4">
-                    <span className={`text-[9px] font-mono font-semibold px-2 py-0.5 border rounded-full capitalize ${getStageStyle(contact.lifecycleStage)}`}>
+                    <span className={`text-[9px] font-medium px-2 py-0.5 border rounded-full capitalize ${getStageStyle(contact.lifecycleStage)}`}>
                       {contact.lifecycleStage}
                     </span>
                   </td>
@@ -102,10 +102,10 @@ export default function ContactTable({
                   {/* Lead Score */}
                   <td className="p-4 min-w-[120px]">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-xs text-white/90 w-6">{contact.leadScore}</span>
-                      <div className="h-1.5 bg-[#1C202D] rounded-full flex-1 overflow-hidden">
+                      <span className="font-medium text-xs text-[#FFFFFF] w-6">{contact.leadScore}</span>
+                      <div className="h-1.5 bg-[#0D0E12] rounded-full flex-1 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-[#6B7280] to-[#6B7280] rounded-full"
+                          className="h-full bg-[#696CFF] rounded-full"
                           style={{ width: `${contact.leadScore}%` }}
                         />
                       </div>
@@ -116,11 +116,11 @@ export default function ContactTable({
                   <td className="p-4 max-w-[200px]">
                     <div className="flex flex-wrap gap-1">
                       {contact.tags.map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.2 bg-[#12141B] border border-[#1E2230] text-[#B0B8C8] text-[9px] font-mono rounded">
+                        <span key={tag} className="px-1.5 py-0.2 bg-[#0D0E12] border border-[#202126] text-[#8A8D96] text-[9px] font-medium rounded">
                           {tag}
                         </span>
                       ))}
-                      {contact.tags.length === 0 && <span className="text-[#7A8499] font-mono">—</span>}
+                      {contact.tags.length === 0 && <span className="text-[#8A8D96] font-medium">—</span>}
                     </div>
                   </td>
 
@@ -128,25 +128,25 @@ export default function ContactTable({
                   <td className="p-4">
                     <div className="flex items-center gap-2.5">
                       {contact.emailSuppressed && (
-                        <div className="flex items-center gap-1 text-[#FE5C5C] text-[9px] font-mono bg-[#FE5C5C]/10 border border-[#FE5C5C]/25 px-1.5 py-0.2 rounded">
-                          <ShieldAlert className="w-3 h-3 text-[#FE5C5C]" />
+                        <div className="flex items-center gap-1 text-[#FF5A4F] text-[9px] font-medium bg-[#FF5A4F]/10 border border-[#FF5A4F]/25 px-1.5 py-0.2 rounded">
+                          <ShieldAlert className="w-3 h-3 text-[#FF5A4F]" />
                           <span>SUPRESSED</span>
                         </div>
                       )}
                       {contact.unsubscribed && (
-                        <div className="flex items-center gap-1 text-[#FE8A5C] text-[9px] font-mono bg-[#FE8A5C]/10 border border-[#FE8A5C]/25 px-1.5 py-0.2 rounded">
-                          <MailX className="w-3 h-3 text-[#FE8A5C]" />
+                        <div className="flex items-center gap-1 text-[#FFB020] text-[9px] font-medium bg-[#FFB020]/10 border border-[#FFB020]/25 px-1.5 py-0.2 rounded">
+                          <MailX className="w-3 h-3 text-[#FFB020]" />
                           <span>UNSUB</span>
                         </div>
                       )}
                       {!contact.emailSuppressed && !contact.unsubscribed && (
-                        <span className="text-[#3CD3AD] text-[9px] font-mono">Active</span>
+                        <span className="text-[#3CD3AD] text-[9px] font-medium">Active</span>
                       )}
                     </div>
                   </td>
 
                   {/* Created Date */}
-                  <td className="p-4 font-mono text-[#7A8499]">
+                  <td className="p-4 font-medium text-[#8A8D96]">
                     {new Date(contact.createdAt).toLocaleDateString(undefined, {
                       year: "numeric",
                       month: "short",
@@ -158,7 +158,7 @@ export default function ContactTable({
                   <td className="p-4 pr-6 text-right relative">
                     <button
                       onClick={() => setActiveMenuId(activeMenuId === contact.id ? null : contact.id)}
-                      className="p-1.5 hover:bg-[#1C1F2C] border border-transparent hover:border-[#1E2230] rounded-lg text-[#B0B8C8] hover:text-white cursor-pointer transition-colors"
+                      className="p-1.5 hover:bg-[#25262B] border border-transparent hover:border-[#8A8D96] rounded-lg text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer transition-colors"
                     >
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
@@ -167,13 +167,13 @@ export default function ContactTable({
                     {activeMenuId === contact.id && (
                       <>
                         <div className="fixed inset-0 z-30" onClick={() => setActiveMenuId(null)} />
-                        <div className="absolute right-6 mt-1 w-44 rounded-2xl bg-[#090A0E] border border-[#1E222D] shadow-2xl p-1.5 z-40 text-left">
+                        <div className="absolute right-6 mt-1 w-44 rounded-[12px] bg-[#18191C] border border-[#202126] shadow-2xl p-1.5 z-40 text-left">
                           <button
                             onClick={() => {
                               onView(contact)
                               setActiveMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#B0B8C8] hover:text-white hover:bg-[#12141B] rounded-xl cursor-pointer transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8A8D96] hover:text-[#FFFFFF] hover:bg-[#25262B] rounded-[8px] cursor-pointer transition-colors"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             <span>View Details</span>
@@ -183,7 +183,7 @@ export default function ContactTable({
                               onEdit(contact)
                               setActiveMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#B0B8C8] hover:text-white hover:bg-[#12141B] rounded-xl cursor-pointer transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8A8D96] hover:text-[#FFFFFF] hover:bg-[#25262B] rounded-[8px] cursor-pointer transition-colors"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                             <span>Edit Contact</span>
@@ -193,7 +193,7 @@ export default function ContactTable({
                               onToggleSuppress(contact.id)
                               setActiveMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#B0B8C8] hover:text-white hover:bg-[#12141B] rounded-xl cursor-pointer transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#8A8D96] hover:text-[#FFFFFF] hover:bg-[#25262B] rounded-[8px] cursor-pointer transition-colors"
                           >
                             {contact.emailSuppressed ? (
                               <>
@@ -202,18 +202,18 @@ export default function ContactTable({
                               </>
                             ) : (
                               <>
-                                <SuppressIcon className="w-3.5 h-3.5 text-[#FE5C5C]" />
+                                <SuppressIcon className="w-3.5 h-3.5 text-[#FF5A4F]" />
                                 <span>Suppress</span>
                               </>
                             )}
                           </button>
-                          <div className="h-[1px] bg-[#1E222D] my-1" />
+                          <div className="h-[1px] bg-[#202126] my-1" />
                           <button
                             onClick={() => {
                               onDelete(contact.id)
                               setActiveMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#FE5C5C] hover:bg-[#FE5C5C]/10 rounded-xl cursor-pointer transition-colors"
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#FF5A4F] hover:bg-[#FF5A4F]/10 rounded-[8px] cursor-pointer transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>Delete Contact</span>
@@ -230,23 +230,23 @@ export default function ContactTable({
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-4 bg-[#090A0E] border-t border-[#1C202C] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-[#7A8499]">
+      <div className="p-4 bg-[#0D0E12] border-t border-[#202126] flex flex-col sm:flex-row items-center justify-between gap-4 font-medium text-[11px] text-[#8A8D96]">
         <div className="flex items-center gap-2">
           <span>Page size:</span>
-          <div className="flex items-center bg-[#111319] border border-[#1E222D] rounded-lg px-2 py-0.5">
+          <div className="flex items-center bg-transparent border border-[#202126] hover:border-[#8A8D96] transition-colors rounded-[8px] px-2 py-0.5">
             <select
               value={pageSize}
               onChange={(e) => {
                 setPageSize(Number(e.target.value))
                 setCurrentPage(1)
               }}
-              className="bg-transparent text-[#B0B8C8] focus:outline-none cursor-pointer pr-3"
+              className="bg-transparent text-[#FFFFFF] focus:outline-none cursor-pointer pr-3"
             >
-              <option value={10} className="bg-[#090A0E]">10</option>
-              <option value={20} className="bg-[#090A0E]">20</option>
-              <option value={50} className="bg-[#090A0E]">50</option>
-              <option value={100} className="bg-[#090A0E]">100</option>
-              <option value={200} className="bg-[#090A0E]">200</option>
+              <option value={10} className="bg-[#18191C]">10</option>
+              <option value={20} className="bg-[#18191C]">20</option>
+              <option value={50} className="bg-[#18191C]">50</option>
+              <option value={100} className="bg-[#18191C]">100</option>
+              <option value={200} className="bg-[#18191C]">200</option>
             </select>
           </div>
           <span className="ml-2">
@@ -259,7 +259,7 @@ export default function ContactTable({
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 bg-[#111319] hover:bg-[#1E222F] disabled:opacity-30 disabled:hover:bg-[#111319] border border-[#1E222D] rounded-lg text-[#B0B8C8] disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="px-2 py-1 bg-transparent hover:border-[#8A8D96] disabled:opacity-30 border border-[#202126] rounded-[8px] text-[#FFFFFF] disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             Prev
           </button>
@@ -269,10 +269,10 @@ export default function ContactTable({
               <button
                 key={pageNum}
                 onClick={() => handlePageChange(pageNum)}
-                className={`px-2.5 py-1 rounded-lg text-xs border transition-colors cursor-pointer ${
+                className={`px-2.5 py-1 rounded-[8px] text-xs border transition-colors cursor-pointer ${
                   currentPage === pageNum
-                    ? "bg-[#6B7280] border-[#6B7280] text-white"
-                    : "bg-[#111319] hover:bg-[#1E222F] border-[#1E222D] text-[#B0B8C8]"
+                    ? "bg-[#696CFF] border-[#696CFF] text-[#FFFFFF]"
+                    : "bg-transparent hover:border-[#8A8D96] border-[#202126] text-[#FFFFFF]"
                 }`}
               >
                 {pageNum}
@@ -282,7 +282,7 @@ export default function ContactTable({
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 bg-[#111319] hover:bg-[#1E222F] disabled:opacity-30 disabled:hover:bg-[#111319] border border-[#1E222D] rounded-lg text-[#B0B8C8] disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="px-2 py-1 bg-transparent hover:border-[#8A8D96] disabled:opacity-30 border border-[#202126] rounded-[8px] text-[#FFFFFF] disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             Next
           </button>

@@ -151,21 +151,21 @@ export default function ContactDrawer({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-[#090A0E] border-l border-[#1C202C] text-white z-50 flex flex-col justify-between font-sans overflow-hidden"
+            className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-[#0D0E12] border-l border-[#202126] text-[#FFFFFF] z-50 flex flex-col justify-between font-sans overflow-hidden"
           >
             {/* 1. Header block */}
-            <div className="p-6 border-b border-[#1C202C] flex items-center justify-between bg-[#0B0C10]/40">
+            <div className="p-6 border-b border-[#202126] flex items-center justify-between bg-[#0D0E12]">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[#9CA3AF] font-mono uppercase tracking-widest leading-none">
+                <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-widest leading-none">
                   CRM Inspector
                 </span>
-                <span className="bg-[#1E2230] text-[#B0B8C8] text-[9px] font-mono px-2 py-0.5 rounded uppercase font-semibold">
+                <span className="bg-[#25262B] text-[#8A8D96] text-[9px] font-medium px-2 py-0.5 rounded-[8px] uppercase">
                   {mode} Mode
                 </span>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 hover:bg-[#1E2230] border border-[#1E2230]/20 rounded-lg text-[#B0B8C8] hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 hover:bg-[#25262B] border border-transparent hover:border-[#202126] rounded-[8px] text-[#8A8D96] hover:text-[#FFFFFF] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -177,20 +177,20 @@ export default function ContactDrawer({
                 /* INSPECTOR DETAIL VIEW */
                 <div className="space-y-6">
                   {/* Profile banner */}
-                  <div className="flex items-center gap-4 bg-[#0F1016] p-5 rounded-2xl border border-[#1C202C]/80">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6B7280] to-[#6B7280] flex items-center justify-center font-bold text-lg tracking-tight select-none shadow-md shadow-[#6B7280]/10">
+                  <div className="flex items-center gap-4 bg-[#18191C] p-5 rounded-[16px] border border-[#202126]">
+                    <div className="w-14 h-14 rounded-[12px] bg-gradient-to-br from-[#696CFF] to-[#5A5CE6] flex items-center justify-center font-bold text-lg tracking-tight select-none shadow-md shadow-[#696CFF]/10 text-[#FFFFFF]">
                       {getInitials()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-semibold text-white/95 leading-snug truncate">
+                      <h3 className="text-base font-semibold text-[#FFFFFF] leading-snug truncate">
                         {contact.firstName} {contact.lastName}
                       </h3>
-                      <p className="text-xs text-[#B0B8C8] font-mono truncate leading-none mt-1">{contact.email}</p>
+                      <p className="text-xs text-[#8A8D96] font-medium truncate leading-none mt-1">{contact.email}</p>
                       <div className="flex items-center gap-2 mt-2.5">
-                        <span className="bg-zinc-500/10 border border-zinc-500/25 text-[#9CA3AF] text-[9px] font-mono font-semibold px-2 py-0.5 rounded-full capitalize">
+                        <span className="bg-[#18191C] border border-[#202126] text-[#8A8D96] text-[9px] font-medium px-2 py-0.5 rounded-full capitalize">
                           {contact.lifecycleStage}
                         </span>
-                        <span className="bg-[#12141C] border border-[#1E2230] text-[#7A8499] text-[9px] font-mono px-2 py-0.5 rounded">
+                        <span className="bg-[#18191C] border border-[#202126] text-[#8A8D96] text-[9px] font-medium px-2 py-0.5 rounded-[8px]">
                           Score: {contact.leadScore}
                         </span>
                       </div>
@@ -236,7 +236,7 @@ export default function ContactDrawer({
                   </div>
 
                   {/* Tabs Section selectors */}
-                  <div className="border-b border-[#1C202C]/60 flex gap-4 text-xs font-semibold">
+                  <div className="border-b border-[#202126] flex gap-4 text-xs font-semibold">
                     {[
                       { id: "overview", label: "Overview" },
                       { id: "properties", label: "Custom Details" },
@@ -246,12 +246,12 @@ export default function ContactDrawer({
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`pb-2.5 relative transition-colors duration-300 cursor-pointer ${
-                          activeTab === tab.id ? "text-[#6B7280]" : "text-[#B0B8C8] hover:text-white"
+                          activeTab === tab.id ? "text-[#696CFF]" : "text-[#8A8D96] hover:text-[#FFFFFF]"
                         }`}
                       >
                         <span>{tab.label}</span>
                         {activeTab === tab.id && (
-                          <motion.div layoutId="tab-glow-bar" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#6B7280]" />
+                          <motion.div layoutId="tab-glow-bar" className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#696CFF]" />
                         )}
                       </button>
                     ))}
@@ -262,14 +262,14 @@ export default function ContactDrawer({
                     {activeTab === "overview" && (
                       <div className="space-y-4 text-xs">
                         {[
-                          { label: "Phone Connection", val: contact.phone || "—", mono: true },
+                          { label: "Phone Connection", val: contact.phone || "—", mono: false },
                           { label: "Traffic Source", val: contact.sourceChannel, mono: false },
-                          { label: "Profile Created", val: new Date(contact.createdAt).toLocaleString(), mono: true },
-                          { label: "Database ID", val: contact.id, mono: true }
+                          { label: "Profile Created", val: new Date(contact.createdAt).toLocaleString(), mono: false },
+                          { label: "Database ID", val: contact.id, mono: false }
                         ].map((row) => (
-                          <div key={row.label} className="flex justify-between py-2 border-b border-[#1C202C]/40">
-                            <span className="text-[#7A8499]">{row.label}</span>
-                            <span className={`font-semibold ${row.mono ? "font-mono text-white/80" : "text-white/95"}`}>{row.val}</span>
+                          <div key={row.label} className="flex justify-between py-2 border-b border-[#202126]">
+                            <span className="text-[#8A8D96]">{row.label}</span>
+                            <span className={`font-semibold text-[#FFFFFF]`}>{row.val}</span>
                           </div>
                         ))}
                       </div>
@@ -277,13 +277,13 @@ export default function ContactDrawer({
 
                     {activeTab === "properties" && (
                       <div className="space-y-3.5">
-                        {Object.entries(contact.customProperties).length === 0 ? (
-                          <p className="text-xs text-[#7A8499] font-mono italic">No custom JSON fields registered.</p>
+                        {Object.entries(contact.customProperties ?? {}).length === 0 ? (
+                          <p className="text-xs text-[#8A8D96] font-medium italic">No custom JSON fields registered.</p>
                         ) : (
-                          Object.entries(contact.customProperties).map(([k, v]) => (
-                            <div key={k} className="p-3 bg-[#08090C] border border-[#161922] rounded-xl flex items-center justify-between">
-                              <span className="text-xs font-mono font-semibold text-[#B0B8C8]">{k}</span>
-                              <span className="text-xs font-mono text-white/90">
+                          Object.entries(contact.customProperties ?? {}).map(([k, v]) => (
+                            <div key={k} className="p-3 bg-[#0D0E12] border border-[#202126] rounded-[12px] flex items-center justify-between">
+                              <span className="text-xs font-medium text-[#8A8D96]">{k}</span>
+                              <span className="text-xs font-medium text-[#FFFFFF]">
                                 {typeof v === "object" ? JSON.stringify(v) : String(v)}
                               </span>
                             </div>
@@ -295,12 +295,12 @@ export default function ContactDrawer({
                     {activeTab === "tags" && (
                       <div className="flex flex-wrap gap-1.5">
                         {contact.tags.map((tag) => (
-                          <span key={tag} className="px-2.5 py-0.5 bg-[#12141B] border border-[#1E2230] text-[#9CA3AF] text-[10px] font-mono rounded-full font-semibold">
+                          <span key={tag} className="px-2.5 py-0.5 bg-[#18191C] border border-[#202126] text-[#8A8D96] text-[10px] rounded-full font-semibold">
                             {tag}
                           </span>
                         ))}
                         {contact.tags.length === 0 && (
-                          <p className="text-xs text-[#7A8499] font-mono italic">No tags attached to this profile.</p>
+                          <p className="text-xs text-[#8A8D96] italic">No tags attached to this profile.</p>
                         )}
                       </div>
                     )}
@@ -313,61 +313,61 @@ export default function ContactDrawer({
                 <form onSubmit={handleSubmit} className="space-y-5">
                   {/* Email (Required) */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Email address *</label>
+                    <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Email address *</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="name@company.com"
-                      className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                     />
                   </div>
 
                   {/* First & Last Name */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">First Name</label>
+                      <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">First Name</label>
                       <input
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="Amélie"
-                        className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none"
+                        className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Last Name</label>
+                      <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Last Name</label>
                       <input
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="Laurent"
-                        className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none"
+                        className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                       />
                     </div>
                   </div>
 
                   {/* Phone Connection */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Phone number</label>
+                    <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Phone number</label>
                     <input
                       type="text"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+1 (555) 019-2834"
-                      className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none font-mono"
+                      className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                     />
                   </div>
 
                   {/* Lifecycle Dropdown */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Lifecycle Stage</label>
+                    <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Lifecycle Stage</label>
                     <div className="relative">
                       <select
                         value={lifecycleStage}
                         onChange={(e) => setLifecycleStage(e.target.value as any)}
-                        className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs focus:outline-none appearance-none cursor-pointer"
+                        className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs focus:outline-none appearance-none cursor-pointer text-[#FFFFFF]"
                       >
                         <option value="lead">Lead</option>
                         <option value="prospect">Prospect</option>
@@ -375,7 +375,7 @@ export default function ContactDrawer({
                         <option value="churned">Churned</option>
                         <option value="unqualified">Unqualified</option>
                       </select>
-                      <X className="w-3.5 h-3.5 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#7A8499]" />
+                      <X className="w-3.5 h-3.5 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A8D96]" />
                     </div>
                   </div>
 
@@ -399,26 +399,26 @@ export default function ContactDrawer({
 
                   {/* Creatable Tags Field */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Tags (Press Enter to add)</label>
+                    <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Tags (Press Enter to add)</label>
                     <input
                       type="text"
                       value={tagInput}
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={handleAddTag}
                       placeholder="Add tag and hit Enter..."
-                      className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                     />
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {tags.map((t) => (
                         <span
                           key={t}
-                          className="px-2 py-0.5 bg-[#141620] border border-[#6B7280]/20 text-[#9CA3AF] text-[10px] font-mono rounded flex items-center gap-1.5"
+                          className="px-2 py-0.5 bg-[#18191C] border border-[#202126] text-[#8A8D96] text-[10px] rounded-[8px] flex items-center gap-1.5"
                         >
                           <span>{t}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveTag(t)}
-                            className="hover:text-white transition-colors cursor-pointer"
+                            className="hover:text-[#FFFFFF] transition-colors cursor-pointer"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -428,13 +428,13 @@ export default function ContactDrawer({
                   </div>
 
                   {/* Custom properties JSONB builder */}
-                  <div className="space-y-2.5 pt-2 border-t border-[#1C202C]/60">
+                  <div className="space-y-2.5 pt-2 border-t border-[#202126]">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Custom Properties (JSONB)</label>
+                      <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Custom Properties (JSONB)</label>
                       <button
                         type="button"
                         onClick={handleAddPropRow}
-                        className="text-[10px] font-semibold text-[#6B7280] hover:underline flex items-center gap-1 cursor-pointer"
+                        className="text-[10px] font-semibold text-[#696CFF] hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Add Property</span>
@@ -449,19 +449,19 @@ export default function ContactDrawer({
                             placeholder="Property Key"
                             value={prop.key}
                             onChange={(e) => handlePropChange(idx, "key", e.target.value)}
-                            className="w-1/2 px-3 py-2 bg-[#08090C] border border-[#1E2230] rounded-xl text-xs font-mono placeholder-[#7A8499] focus:outline-none"
+                            className="w-1/2 px-3 py-2 bg-[#0D0E12] border border-[#202126] rounded-[12px] text-xs font-medium placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                           />
                           <input
                             type="text"
                             placeholder="Value (text, number, bool)"
                             value={prop.value}
                             onChange={(e) => handlePropChange(idx, "value", e.target.value)}
-                            className="w-1/2 px-3 py-2 bg-[#08090C] border border-[#1E2230] rounded-xl text-xs font-mono placeholder-[#7A8499] focus:outline-none"
+                            className="w-1/2 px-3 py-2 bg-[#0D0E12] border border-[#202126] rounded-[12px] text-xs font-medium placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                           />
                           <button
                             type="button"
                             onClick={() => handleRemovePropRow(idx)}
-                            className="p-2 bg-transparent text-[#7A8499] hover:text-[#FE5C5C] transition-colors cursor-pointer"
+                            className="p-2 bg-transparent text-[#8A8D96] hover:text-[#FF5A4F] transition-colors cursor-pointer"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -471,14 +471,14 @@ export default function ContactDrawer({
                   </div>
 
                   {/* Traffic source */}
-                  <div className="space-y-1.5 pt-2 border-t border-[#1C202C]/60">
-                    <label className="text-xs font-semibold text-[#B0B8C8] uppercase tracking-wider">Source Channel</label>
+                  <div className="space-y-1.5 pt-2 border-t border-[#202126]">
+                    <label className="text-xs font-semibold text-[#8A8D96] uppercase tracking-wider">Source Channel</label>
                     <input
                       type="text"
                       value={sourceChannel}
                       onChange={(e) => setSourceChannel(e.target.value)}
                       placeholder="e.g. Google Search, Direct Signup"
-                      className="w-full px-4 py-2.5 bg-[#08090C] border border-[#1E2230] focus:border-[#6B7280]/50 rounded-xl text-xs placeholder-[#7A8499] focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-[#0D0E12] border border-[#202126] focus:border-[#696CFF]/50 rounded-[12px] text-xs placeholder-[#8A8D96] focus:outline-none text-[#FFFFFF]"
                     />
                   </div>
                 </form>
@@ -487,17 +487,17 @@ export default function ContactDrawer({
 
             {/* 3. Footer row actions */}
             {mode !== "view" && (
-              <div className="p-6 border-t border-[#1C202C] bg-[#0B0C10]/40 flex gap-3">
+              <div className="p-6 border-t border-[#202126] bg-[#0D0E12] flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-2.5 bg-transparent border border-[#232737] hover:border-[#3E4562] text-xs font-semibold text-[#B0B8C8] hover:text-white rounded-xl transition-all cursor-pointer"
+                  className="flex-1 py-2.5 bg-transparent hover:bg-[#25262B] border border-[#202126] hover:border-[#8A8D96] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] rounded-[12px] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-[#6B7280] to-[#6B7280] hover:from-[#4B5563] hover:to-[#374151] text-xs font-semibold text-white rounded-xl shadow-lg shadow-[#6B7280]/15 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 bg-[#696CFF] hover:bg-[#5A5CE6] text-xs font-semibold text-[#FFFFFF] rounded-[12px] shadow-none transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>{mode === "create" ? "Create Profile" : "Save Changes"}</span>
