@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 interface RequestConfig extends RequestInit {
@@ -45,7 +47,11 @@ class ApiClient {
       const body = await response.json().catch(() => ({ message: response.statusText }));
       const msg = body?.error?.message || body?.message || 'Request failed';
       const code = body?.error?.code || body?.code;
-      throw new ApiError(msg, response.status, code);
+      const error = new ApiError(msg, response.status, code);
+      toast.error(`Error ${response.status}`, {
+        description: code ? `${msg} (${code})` : msg,
+      });
+      throw error;
     }
 
     if (response.status === 204) {

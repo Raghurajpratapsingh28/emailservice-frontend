@@ -4,6 +4,7 @@ import { useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, X, CheckCircle2, ChevronRight, FileText, Loader2, AlertCircle, Copy, Check } from "lucide-react"
 import { contactsService } from "@/lib/contacts-service"
+import { ApiError } from "@/lib/api-client"
 
 interface BulkImportProps {
   isOpen: boolean
@@ -19,7 +20,7 @@ bob@example.com,Bob,,,subscriber,`
 
 const REQUIRED_HEADER = "email"
 const OPTIONAL_HEADERS = ["first_name", "last_name", "phone", "lifecycle_stage", "lead_score"]
-const LIFECYCLE_VALUES = ["lead", "subscriber", "customer", "churned"]
+const LIFECYCLE_VALUES = ["lead", "prospect", "customer", "churned", "unqualified"]
 
 function parseCSV(text: string): { rows: Record<string, string>[]; errors: string[] } {
   const lines = text.trim().split(/\r?\n/).filter(Boolean)
@@ -93,8 +94,9 @@ export default function BulkImport({ isOpen, workspaceId, onClose, onImportCompl
       const res = await contactsService.bulkImport(workspaceId, contacts)
       setImportResult(res)
       setStep("result")
-    } catch (err: any) {
-      setImportError(err.message || "Import failed")
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Import failed"
+      setImportError(msg)
       setStep("preview")
     }
   }
@@ -200,7 +202,7 @@ export default function BulkImport({ isOpen, workspaceId, onClose, onImportCompl
                         ))}
                       </div>
                       <p className="text-[10px] text-[#8A8D96] font-medium mt-2">
-                        <span className="text-[#FFFFFF]">lifecycle_stage</span> values: {LIFECYCLE_VALUES.join(", ")}
+                        <span className="text-[#FFFFFF]">lifecycle_stage</span> values: {LIFECYCLE_VALUES.join(", ")} (default: lead)
                       </p>
                       <p className="text-[10px] text-[#8A8D96] font-medium">
                         Duplicate emails are automatically skipped.

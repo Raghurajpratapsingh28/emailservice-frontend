@@ -11,6 +11,7 @@ import BulkImport from "./bulk-import"
 import { contactsService } from "@/lib/contacts-service"
 import type { Contact } from "@/lib/contacts-data"
 import { useAuth } from "@/lib/auth-context"
+import { toast } from "sonner"
 
 interface Props {
   workspaceId?: string
@@ -114,7 +115,9 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
   }
 
   const handleBulkImportComplete = (imported: number, skipped: number) => {
-    alert(`Imported ${imported} contacts, skipped ${skipped}`)
+    toast.success("Import complete", {
+      description: `${imported} contact${imported !== 1 ? "s" : ""} imported, ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped.`,
+    })
     setIsImportOpen(false)
     loadContacts(workspaceId)
   }
