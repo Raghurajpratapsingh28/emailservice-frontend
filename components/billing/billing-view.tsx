@@ -9,12 +9,14 @@ import PlansGrid from "./plans-grid"
 import InvoicesTable from "./invoices-table"
 import { ChangePlanModal, CancelModal } from "./billing-modals"
 import { billingService, type Subscription, type Usage, type Invoice } from "@/lib/billing-service"
+import { contactsService } from "@/lib/contacts-service"
 import { useAuth } from "@/lib/auth-context"
 
-export default function BillingView() {
+export default function BillingView({ workspaceSlug }: { workspaceSlug?: string }) {
   const { user } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [usage, setUsage] = useState<Usage | null>(null)
+  const [contactsTotal, setContactsTotal] = useState<number | null>(null)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [changePlanTarget, setChangePlanTarget] = useState<string | null>(null)
@@ -23,23 +25,26 @@ export default function BillingView() {
   const [workspaceId, setWorkspaceId] = useState<string>("")
 
   useEffect(() => {
-    if (user?.workspaces?.[0]) {
-      const wsId = user.workspaces[0].id
-      setWorkspaceId(wsId)
-      loadData(wsId)
-    }
-  }, [user])
+    if (!user?.workspaces?.length) return
+    const ws = workspaceSlug
+      ? user.workspaces.find(w => w.slug === workspaceSlug) ?? user.workspaces[0]
+      : user.workspaces[0]
+    setWorkspaceId(ws.id)
+    loadData(ws.id)
+  }, [user, workspaceSlug])
 
   const loadData = async (wsId: string) => {
     try {
-      const [subRes, usageRes, invoicesRes] = await Promise.all([
+      const [subRes, usageRes, invoicesRes, contactsRes] = await Promise.allSettled([
         billingService.getSubscription(wsId),
         billingService.getUsage(wsId),
         billingService.getInvoices(wsId),
+        contactsService.getContacts(wsId, { pageSize: 1 }),
       ])
-      setSubscription(subRes)
-      setUsage(usageRes)
-      setInvoices(invoicesRes.items)
+      if (subRes.status === "fulfilled") setSubscription(subRes.value)
+      if (usageRes.status === "fulfilled") setUsage(usageRes.value)
+      if (invoicesRes.status === "fulfilled") setInvoices(invoicesRes.value.items)
+      if (contactsRes.status === "fulfilled") setContactsTotal(contactsRes.value.total)
     } catch (error) {
       console.error("Failed to load billing data:", error)
     } finally {
@@ -107,7 +112,7 @@ export default function BillingView() {
   const period = `${new Date(usage.periodStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${new Date(usage.periodEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
 
   const usageMetrics = [
-    { name: "Contacts", used: usage.contacts.used, limit: usage.contacts.limit },
+    { name: "Contacts", used: contactsTotal ?? usage.contacts.used, limit: usage.contacts.limit },
     { name: "Emails Sent", used: usage.emails.used, limit: usage.emails.limit },
     { name: "Events Tracked", used: usage.events.used, limit: usage.events.limit },
   ]
