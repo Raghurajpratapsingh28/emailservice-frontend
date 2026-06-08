@@ -1,6 +1,7 @@
 "use client"
 
-import { PLANS, BillingInterval, planPrice, Subscription } from "@/lib/billing-data"
+import { PLANS, BillingInterval, planPrice } from "@/lib/billing-data"
+import type { Subscription } from "@/lib/billing-service"
 import { X, ArrowRight, AlertTriangle } from "lucide-react"
 
 // ── Change Plan Modal ──────────────────────────────────────────────
@@ -19,41 +20,45 @@ export function ChangePlanModal({ targetPlanId, interval, currentSubscription, o
   const targetPlan = PLANS.find((p) => p.id === targetPlanId)
   if (!currentPlan || !targetPlan) return null
 
+  const currentInterval = (currentSubscription.billingInterval as BillingInterval) ?? "monthly"
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-sm bg-[#18191C] border border-[#202126] rounded-[16px] shadow-2xl shadow-black/50 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#202126]">
-          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider uppercase tracking-wider">Change Plan</span>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Change Plan</span>
           <button onClick={onClose} className="p-2 rounded-[12px] hover:bg-[#25262B] text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
         <div className="px-6 py-5 space-y-4">
           <h2 className="text-sm font-bold text-[#FFFFFF]">Change to {targetPlan.name} plan?</h2>
 
-          {/* Plan comparison */}
           <div className="flex items-center gap-3 p-3.5 rounded-[12px] bg-[#18191C] border border-[#202126] text-xs">
             <div className="text-center flex-1">
-              <p className="text-[9px] font-medium uppercase tracking-wider text-[#8A8D96] uppercase">Current</p>
+              <p className="text-[9px] font-medium uppercase tracking-wider text-[#8A8D96]">Current</p>
               <p className="font-semibold text-[#FFFFFF]/80 mt-0.5">{currentPlan.name}</p>
-              <p className="font-medium uppercase tracking-wider text-[#8A8D96]">${planPrice(currentPlan, currentSubscription.billingInterval)}/mo</p>
+              <p className="font-medium uppercase tracking-wider text-[#8A8D96]">${planPrice(currentPlan, currentInterval)}/{currentInterval === "yearly" ? "yr" : "mo"}</p>
             </div>
             <ArrowRight className="w-4 h-4 text-[#8A8D96] shrink-0" />
             <div className="text-center flex-1">
-              <p className="text-[9px] font-medium uppercase tracking-wider text-[#8A8D96] uppercase">New</p>
+              <p className="text-[9px] font-medium uppercase tracking-wider text-[#8A8D96]">New</p>
               <p className="font-semibold text-[#8A8D96] mt-0.5">{targetPlan.name}</p>
               <p className="font-medium uppercase tracking-wider text-[#8A8D96]">${planPrice(targetPlan, interval)}/{interval === "yearly" ? "yr" : "mo"}</p>
             </div>
           </div>
 
           <div className="space-y-1.5 text-xs text-[#8A8D96]">
-            <p className="flex items-start gap-1.5"><span className="text-[#8A8D96] mt-0.5">•</span> Proration applied immediately</p>
-            <p className="flex items-start gap-1.5"><span className="text-[#8A8D96] mt-0.5">•</span> New limits take effect now</p>
-            <p className="flex items-start gap-1.5"><span className="text-[#8A8D96] mt-0.5">•</span> {targetPlan.contacts.toLocaleString()} contacts · {targetPlan.emails.toLocaleString()} emails/mo</p>
+            <p className="flex items-start gap-1.5"><span className="mt-0.5">•</span> Proration applied immediately</p>
+            <p className="flex items-start gap-1.5"><span className="mt-0.5">•</span> New limits take effect now</p>
+            <p className="flex items-start gap-1.5"><span className="mt-0.5">•</span> {targetPlan.contacts.toLocaleString()} contacts · {targetPlan.emails.toLocaleString()} emails/mo</p>
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#202126]">
           <button onClick={onClose} className="px-4 py-2 bg-[#18191C] hover:bg-[#25262B] border border-[#202126] rounded-[12px] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer">Cancel</button>
-          <button onClick={() => { onConfirm(targetPlanId, interval); onClose() }} className="px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-lg shadow-[#696CFF]/15 transition-all cursor-pointer">
+          <button
+            onClick={() => { onConfirm(targetPlanId, interval); onClose() }}
+            className="px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-lg shadow-[#696CFF]/15 transition-all cursor-pointer"
+          >
             Confirm Change
           </button>
         </div>
@@ -74,14 +79,16 @@ interface CancelProps {
 export function CancelModal({ isOpen, subscription: sub, onClose, onConfirm }: CancelProps) {
   if (!isOpen) return null
   const plan = PLANS.find((p) => p.id === sub.plan)
-  const periodEnd = new Date(sub.currentPeriodEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  const periodEnd = sub.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "period end"
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-sm bg-[#18191C] border border-[#202126] rounded-[16px] shadow-2xl shadow-black/50 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#202126]">
-          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider uppercase tracking-wider">Cancel Subscription</span>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Cancel Subscription</span>
           <button onClick={onClose} className="p-2 rounded-[12px] hover:bg-[#25262B] text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
         <div className="px-6 py-5 space-y-4">

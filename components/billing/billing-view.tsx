@@ -27,13 +27,19 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
   useEffect(() => {
     if (!user?.workspaces?.length) return
     const ws = workspaceSlug
-      ? user.workspaces.find(w => w.slug === workspaceSlug) ?? user.workspaces[0]
+      ? (user.workspaces.find(w => w.id === workspaceSlug) ?? user.workspaces.find(w => w.slug === workspaceSlug) ?? user.workspaces[0])
       : user.workspaces[0]
     setWorkspaceId(ws.id)
+    setSubscription(null)
+    setUsage(null)
+    setInvoices([])
+    setContactsTotal(null)
+    setIsLoading(true)
     loadData(ws.id)
   }, [user, workspaceSlug])
 
   const loadData = async (wsId: string) => {
+    setIsLoading(true)
     try {
       const [subRes, usageRes, invoicesRes, contactsRes] = await Promise.allSettled([
         billingService.getSubscription(wsId),
@@ -53,7 +59,7 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
   }
 
   const handleSelectPlan = async (planId: string, interval: "monthly" | "yearly") => {
-    if (!subscription || subscription.status === "free") {
+    if (!subscription || subscription.plan === "free" || !subscription.stripeSubscriptionId) {
       try {
         const res = await billingService.createCheckout(workspaceId, { plan: planId, billingInterval: interval })
         window.location.href = res.checkoutUrl
@@ -124,11 +130,11 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
         <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF] mt-1">Billing</h1>
       </div>
 
-      <CurrentPlanCard subscription={subscription} onChangePlan={() => setCancelOpen(false)} onCancel={() => setCancelOpen(true)} onResume={handleResume} onUpgrade={() => setChangePlanTarget("growth")} onManageBilling={handleManageBilling} />
+      <CurrentPlanCard subscription={subscription} onChangePlan={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onCancel={() => setCancelOpen(true)} onResume={handleResume} onUpgrade={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onManageBilling={handleManageBilling} />
 
       <UsageSection metrics={usageMetrics} period={period} />
 
-      <PlansGrid currentPlanId={subscription.plan} onSelectPlan={handleSelectPlan} />
+      <div id="plans-grid"><PlansGrid currentPlanId={subscription.plan} onSelectPlan={handleSelectPlan} /></div>
 
       <InvoicesTable invoices={invoices} />
 
