@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Plus, ArrowLeft, Loader2 } from "lucide-react"
 import { campaignsService } from "@/lib/campaigns-service"
+import { toast } from "sonner"
 import type { Campaign } from "@/lib/campaigns-data"
 import CampaignsTable from "./campaigns-table"
 import CampaignFilters from "./campaign-filters"
@@ -48,19 +49,19 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
 
   const handlePause = async (c: Campaign) => {
     patch(c.id, { status: "paused" })
-    try { patch(c.id, await campaignsService.pause(workspaceId, c.id)) } catch (e: any) { patch(c.id, { status: c.status }); alert(e.message) }
+    try { patch(c.id, await campaignsService.pause(workspaceId, c.id)) } catch (e: any) { patch(c.id, { status: c.status }); toast.error(e.message) }
   }
   const handleResume = async (c: Campaign) => {
-    try { patch(c.id, await campaignsService.resume(workspaceId, c.id)) } catch (e: any) { alert(e.message) }
+    try { patch(c.id, await campaignsService.resume(workspaceId, c.id)) } catch (e: any) { toast.error(e.message) }
   }
   const handleDelete = async (c: Campaign) => {
     if (!window.confirm(`Delete "${c.name}"?`)) return
-    try { await campaignsService.delete(workspaceId, c.id); load() } catch (e: any) { alert(e.message) }
+    try { await campaignsService.delete(workspaceId, c.id); load() } catch (e: any) { toast.error(e.message) }
   }
   const handleSendNow = (c: Campaign) => setSendDialogCampaign(c)
 
   const handleSendConfirm = async (c: Campaign) => {
-    try { await campaignsService.send(workspaceId, c.id); patch(c.id, { status: "sending" }) } catch (e: any) { alert(e.message) }
+    try { await campaignsService.send(workspaceId, c.id); patch(c.id, { status: "sending" }) } catch (e: any) { toast.error(e.message) }
   }
 
   const COUNTS = {

@@ -6,6 +6,7 @@ import { Segment } from "@/lib/segments-data"
 import { segmentsService } from "@/lib/segments-service"
 import { useAuth } from "@/lib/auth-context"
 import { Plus, Loader2, ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import SegmentsTable from "./segments-table"
 import SegmentFormModal from "./segment-form-modal"
@@ -101,7 +102,7 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
       setTotal((t) => t - 1)
       if (view === "detail") setView("list")
     } catch (err: any) {
-      alert(err.message || "Failed to delete segment")
+      toast.error(err.message || "Failed to delete segment")
     }
   }
 
@@ -124,7 +125,7 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
         setTotal((t) => t + 1)
       }
     } catch (err: any) {
-      alert(err.message || "Failed to save segment")
+      toast.error(err.message || "Failed to save segment")
     }
     setEditingSegment(null)
   }

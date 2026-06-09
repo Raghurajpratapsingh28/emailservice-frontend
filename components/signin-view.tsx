@@ -1,18 +1,29 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Eye, EyeOff, UserPlus, Globe, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
+import { useWorkspace } from "@/lib/workspace-context"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import ShowcaseSidebar from "./showcase-sidebar"
 
 export default function SigninView() {
-  const { login } = useAuth()
+  const { login, isAuthenticated, isLoading, user } = useAuth()
+  const { workspaceId } = useWorkspace()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user) {
+      const resolvedId = workspaceId ?? user.workspaces?.[0]?.id
+      router.replace(resolvedId ? `/home/${resolvedId}` : "/home")
+    }
+  }, [isAuthenticated, isLoading, user, workspaceId, router])
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,14 +41,14 @@ export default function SigninView() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    setIsLoading(true)
+    setIsSubmitting(true)
     try {
       await login(formData)
       toast.success("Signed in successfully!")
     } catch (error: any) {
       const message = error.message || "Sign in failed. Please try again."
       toast.error(message)
-      
+
       if (error.code === "INVALID_CREDENTIALS") {
         setErrors({ email: "Invalid email or password" })
       } else if (error.code === "ACCOUNT_LOCKED") {
@@ -46,7 +57,7 @@ export default function SigninView() {
         setErrors({ email: "Account has been disabled" })
       }
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -161,10 +172,10 @@ export default function SigninView() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="w-full py-3.5 sm:py-4.5 bg-gradient-to-r from-[#ff5e36] to-[#ff2a6d] hover:brightness-105 active:scale-[0.995] text-white font-semibold rounded-2xl text-base tracking-wide transition-all shadow-xl shadow-orange-500/10 flex items-center justify-center gap-2 cursor-pointer duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

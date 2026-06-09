@@ -3,6 +3,7 @@
 import { Calendar, Sparkles } from "lucide-react"
 import type { Subscription } from "@/lib/billing-service"
 import { billingService } from "@/lib/billing-service"
+import { toast } from "sonner"
 
 interface Props { subscription: Subscription | null; workspaceId: string }
 
@@ -18,7 +19,7 @@ export default function PlanCard({ subscription, workspaceId }: Props) {
     try {
       const res = await billingService.createPortal(workspaceId)
       window.open(res.url, "_blank")
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { toast.error(e.message) }
   }
 
   return (

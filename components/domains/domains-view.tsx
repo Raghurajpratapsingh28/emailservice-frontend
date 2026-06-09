@@ -7,6 +7,7 @@ import { Plus, ArrowLeft, ChevronDown, Loader2, Globe } from "lucide-react"
 import DomainsTable from "./domains-table"
 import AddDomainModal from "./add-domain-modal"
 import { domainsService, type ApiDomain } from "@/lib/domains-service"
+import { toast } from "sonner"
 
 interface Props { workspaceId: string }
 
@@ -34,12 +35,12 @@ export default function DomainsView({ workspaceId }: Props) {
   useEffect(() => { load() }, [load])
 
   const handleReverify = async (d: ApiDomain) => {
-    try { await domainsService.verify(workspaceId, d.id); load() } catch (e: any) { alert(e.message) }
+    try { await domainsService.verify(workspaceId, d.id); load() } catch (e: any) { toast.error(e.message) }
   }
 
   const handleDelete = async (d: ApiDomain) => {
     if (!window.confirm(`Delete domain "${d.domain}"?\n\nThis will remove the SES identity and prevent sending from this domain.`)) return
-    try { await domainsService.delete(workspaceId, d.id); load() } catch (e: any) { alert(e.message) }
+    try { await domainsService.delete(workspaceId, d.id); load() } catch (e: any) { toast.error(e.message) }
   }
 
   const handleAdded = (d: ApiDomain) => {

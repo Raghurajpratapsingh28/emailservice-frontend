@@ -7,6 +7,7 @@ import { ArrowLeft, RefreshCw, Trash2, CheckCircle2, AlertTriangle, Info, Loader
 import DomainStatusBadge from "./domain-status-badge"
 import DnsRecordsTable from "./dns-records-table"
 import { domainsService, type ApiDomain } from "@/lib/domains-service"
+import { toast } from "sonner"
 
 interface Props { workspaceId: string; domainId: string }
 
@@ -36,14 +37,14 @@ export default function DomainDetailPage({ workspaceId, domainId }: Props) {
     try {
       await domainsService.verify(workspaceId, domain.id)
       await load()
-    } catch (e: any) { alert(e.message) }
+    } catch (e: any) { toast.error(e.message) }
     finally { setIsReverifying(false) }
   }
 
   const handleDelete = async () => {
     if (!domain || !window.confirm(`Delete domain "${domain.domain}"?\n\nThis will remove the SES identity and prevent sending from this domain.`)) return
     try { await domainsService.delete(workspaceId, domain.id); router.push(`/domains/${workspaceId}`) }
-    catch (e: any) { alert(e.message) }
+    catch (e: any) { toast.error(e.message) }
   }
 
   if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" /></div>

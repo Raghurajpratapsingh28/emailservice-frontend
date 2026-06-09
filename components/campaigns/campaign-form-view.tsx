@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { ArrowLeft, ChevronDown, Monitor, Smartphone, Loader2 } from "lucide-react"
 import { campaignsService } from "@/lib/campaigns-service"
+import { toast } from "sonner"
 import { segmentsService } from "@/lib/segments-service"
 import type { Campaign } from "@/lib/campaigns-data"
 
@@ -79,7 +80,7 @@ export default function CampaignFormView({ workspaceId, campaignId }: Props) {
       }
       router.push(`/campaigns/${workspaceId}`)
     } catch (err: any) {
-      alert(err.message || "Failed to save campaign")
+      toast.error(err.message || "Failed to save campaign")
     } finally {
       setIsSaving(false)
     }

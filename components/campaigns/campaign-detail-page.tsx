@@ -7,6 +7,7 @@ import { ArrowLeft, Pencil, Calendar, Send, Pause, Play, Trash2, Users, Mail, Cl
 import CampaignStatusBadge from "./campaign-status-badge"
 import SendNowDialog from "./send-now-dialog"
 import { campaignsService } from "@/lib/campaigns-service"
+import { toast } from "sonner"
 import type { Campaign } from "@/lib/campaigns-data"
 
 // Returns a datetime-local string in the browser's local timezone (YYYY-MM-DDTHH:mm)
@@ -36,23 +37,23 @@ export default function CampaignDetailPage({ workspaceId, campaignId }: Props) {
   const refresh = () => campaignsService.get(workspaceId, campaignId).then(setCampaign).catch(console.error)
 
   const handlePause = async () => {
-    try { setCampaign(await campaignsService.pause(workspaceId, campaignId)) } catch (e: any) { alert(e.message) }
+    try { setCampaign(await campaignsService.pause(workspaceId, campaignId)) } catch (e: any) { toast.error(e.message) }
   }
   const handleResume = async () => {
-    try { setCampaign(await campaignsService.resume(workspaceId, campaignId)) } catch (e: any) { alert(e.message) }
+    try { setCampaign(await campaignsService.resume(workspaceId, campaignId)) } catch (e: any) { toast.error(e.message) }
   }
   const handleDelete = async () => {
     if (!campaign || !window.confirm(`Delete "${campaign.name}"?`)) return
-    try { await campaignsService.delete(workspaceId, campaignId); router.push(`/campaigns/${workspaceId}`) } catch (e: any) { alert(e.message) }
+    try { await campaignsService.delete(workspaceId, campaignId); router.push(`/campaigns/${workspaceId}`) } catch (e: any) { toast.error(e.message) }
   }
   const handleSendNow = () => setSendDialogOpen(true)
   const handleSendConfirm = async () => {
-    try { await campaignsService.send(workspaceId, campaignId); refresh() } catch (e: any) { alert(e.message) }
+    try { await campaignsService.send(workspaceId, campaignId); refresh() } catch (e: any) { toast.error(e.message) }
   }
   const handleScheduleConfirm = async () => {
     const d = new Date(scheduleTime)
     if (d <= new Date()) { setScheduleError("Must be in the future."); return }
-    try { setCampaign(await campaignsService.schedule(workspaceId, campaignId, d.toISOString())); setScheduleOpen(false) } catch (e: any) { alert(e.message) }
+    try { setCampaign(await campaignsService.schedule(workspaceId, campaignId, d.toISOString())); setScheduleOpen(false) } catch (e: any) { toast.error(e.message) }
   }
 
   if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>

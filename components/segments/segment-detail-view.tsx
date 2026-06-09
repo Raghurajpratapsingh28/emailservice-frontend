@@ -8,6 +8,7 @@ import AddContactModal from "./add-contact-modal"
 import { segmentsService } from "@/lib/segments-service"
 import { type Contact } from "@/lib/contacts-service"
 import { ArrowLeft, RefreshCw, Pencil, Trash2, Users, UserPlus, X } from "lucide-react"
+import { toast } from "sonner"
 
 interface Props {
   segment: Segment
@@ -38,7 +39,7 @@ export default function SegmentDetailView({ segment, contacts, workspaceId, onBa
       }
       onContactsChanged([...contacts, newContact], 1)
     } catch (err: any) {
-      alert(err.message || "Failed to add contact")
+      toast.error(err.message || "Failed to add contact")
     }
   }
 
@@ -48,7 +49,7 @@ export default function SegmentDetailView({ segment, contacts, workspaceId, onBa
       await segmentsService.removeContactFromSegment(workspaceId, segment.id, contactId)
       onContactsChanged(contacts.filter((c) => c.id !== contactId), -1)
     } catch (err: any) {
-      alert(err.message || "Failed to remove contact")
+      toast.error(err.message || "Failed to remove contact")
     } finally {
       setRemovingId(null)
     }

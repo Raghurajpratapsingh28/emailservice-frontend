@@ -5,6 +5,7 @@ import { Search, ChevronDown, UserPlus, Trash2, ArrowRight, X } from "lucide-rea
 import { workspaceService, type WorkspaceMember } from "@/lib/workspace-service"
 import { authService } from "@/lib/auth-service"
 import { useAuth } from "@/lib/auth-context"
+import { toast } from "sonner"
 
 const ROLES = ["owner", "admin", "member", "viewer"]
 
@@ -76,7 +77,7 @@ export default function MembersTab({ members, workspaceId, onUpdate }: { members
       setShowInvite(false)
       setInviteEmail("")
       setInviteRole("member")
-      alert("Invite sent! The user will receive an email with instructions.")
+      toast.success("Invite sent! The user will receive an email with instructions.")
     } catch (error) {
       console.error("Failed to send invite:", error)
     } finally {
