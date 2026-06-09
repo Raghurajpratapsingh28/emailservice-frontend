@@ -1,7 +1,5 @@
-export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled" | "free"
 export type BillingInterval = "monthly" | "yearly"
 export type InvoiceStatus = "paid" | "open" | "void" | "draft"
-export type UserRole = "owner" | "admin" | "viewer"
 
 export type Plan = {
   id: string
@@ -13,29 +11,10 @@ export type Plan = {
   events: number
 }
 
-export type Subscription = {
-  status: SubscriptionStatus
-  planId: string
-  interval: BillingInterval
-  currentPeriodStart: string
-  currentPeriodEnd: string
-  cancelAtPeriodEnd: boolean
-  trialEnd: string | null
-}
-
 export type UsageMetric = {
   name: string
   used: number
   limit: number
-}
-
-export type Invoice = {
-  id: string
-  date: string
-  amount: number
-  status: InvoiceStatus
-  hostedInvoiceUrl: string
-  pdfUrl: string
 }
 
 export const PLANS: Plan[] = [
@@ -51,33 +30,6 @@ export const INVOICE_STATUS_META: Record<InvoiceStatus, { label: string; cls: st
   void:  { label: "Void",  cls: "bg-zinc-500/10 border-zinc-500/25 text-zinc-400" },
   draft: { label: "Draft", cls: "bg-zinc-500/10 border-zinc-500/25 text-zinc-400" },
 }
-
-// Mock current user role — in real app comes from auth context
-export const CURRENT_ROLE: UserRole = "owner"
-
-export const mockSubscription: Subscription = {
-  status: "active",
-  planId: "growth",
-  interval: "monthly",
-  currentPeriodStart: "2026-05-01T00:00:00Z",
-  currentPeriodEnd: "2026-06-01T00:00:00Z",
-  cancelAtPeriodEnd: false,
-  trialEnd: null,
-}
-
-export const mockUsage: UsageMetric[] = [
-  { name: "Contacts",       used: 1200,  limit: 50000 },
-  { name: "Emails Sent",    used: 8400,  limit: 200000 },
-  { name: "Events Tracked", used: 42000, limit: 500000 },
-]
-
-export const mockInvoices: Invoice[] = [
-  { id: "inv-001", date: "2026-05-01T00:00:00Z", amount: 29, status: "paid",  hostedInvoiceUrl: "#", pdfUrl: "#" },
-  { id: "inv-002", date: "2026-04-01T00:00:00Z", amount: 29, status: "paid",  hostedInvoiceUrl: "#", pdfUrl: "#" },
-  { id: "inv-003", date: "2026-03-01T00:00:00Z", amount: 29, status: "paid",  hostedInvoiceUrl: "#", pdfUrl: "#" },
-  { id: "inv-004", date: "2026-02-01T00:00:00Z", amount: 9,  status: "paid",  hostedInvoiceUrl: "#", pdfUrl: "#" },
-  { id: "inv-005", date: "2026-06-01T00:00:00Z", amount: 29, status: "open",  hostedInvoiceUrl: "#", pdfUrl: "#" },
-]
 
 export function usageColor(pct: number): string {
   if (pct >= 90) return "from-red-500 to-red-400"

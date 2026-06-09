@@ -1,11 +1,12 @@
 "use client"
 
-import { PLANS, CURRENT_ROLE } from "@/lib/billing-data"
+import { PLANS } from "@/lib/billing-data"
 import type { Subscription } from "@/lib/billing-service"
 import { CheckCircle2, AlertTriangle, XCircle, Clock, ExternalLink } from "lucide-react"
 
 interface Props {
   subscription: Subscription
+  userRole: string
   onChangePlan: () => void
   onCancel: () => void
   onResume: () => void
@@ -13,9 +14,9 @@ interface Props {
   onManageBilling?: () => void
 }
 
-export default function CurrentPlanCard({ subscription: sub, onChangePlan, onCancel, onResume, onUpgrade, onManageBilling }: Props) {
+export default function CurrentPlanCard({ subscription: sub, userRole, onChangePlan, onCancel, onResume, onUpgrade, onManageBilling }: Props) {
   const plan = PLANS.find((p) => p.id === sub.plan)
-  const isOwner = CURRENT_ROLE === "owner"
+  const isOwner = userRole === "owner"
   const isFree = sub.plan === "free"
 
   const periodEnd = sub.currentPeriodEnd
@@ -24,6 +25,8 @@ export default function CurrentPlanCard({ subscription: sub, onChangePlan, onCan
   const periodStart = sub.currentPeriodStart
     ? new Date(sub.currentPeriodStart).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "—"
+
+  const interval = sub.billingInterval ?? "monthly"
 
   type BadgeStatus = "active" | "trialing" | "past_due" | "canceled" | "free"
   const STATUS_BADGE: Record<BadgeStatus, React.ReactNode> = {
@@ -49,8 +52,8 @@ export default function CurrentPlanCard({ subscription: sub, onChangePlan, onCan
           </div>
           {!isFree && plan && (
             <p className="text-sm text-[#8A8D96] mt-1 font-medium uppercase tracking-wider">
-              ${sub.billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}/{sub.billingInterval === "yearly" ? "yr" : "mo"}
-              <span className="text-[#8A8D96] ml-1.5 capitalize">({sub.billingInterval})</span>
+              ${interval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}/{interval === "yearly" ? "yr" : "mo"}
+              <span className="text-[#8A8D96] ml-1.5 capitalize">({interval})</span>
             </p>
           )}
         </div>

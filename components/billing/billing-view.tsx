@@ -12,6 +12,8 @@ import { billingService, type Subscription, type Usage, type Invoice } from "@/l
 import { contactsService } from "@/lib/contacts-service"
 import { useAuth } from "@/lib/auth-context"
 
+const ACTIVE_STATUSES = ["active", "trialing", "past_due"]
+
 export default function BillingView({ workspaceSlug }: { workspaceSlug?: string }) {
   const { user } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
@@ -23,6 +25,7 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
   const [changePlanInterval, setChangePlanInterval] = useState<"monthly" | "yearly">("monthly")
   const [cancelOpen, setCancelOpen] = useState(false)
   const [workspaceId, setWorkspaceId] = useState<string>("")
+  const [userRole, setUserRole] = useState<string>("viewer")
 
   useEffect(() => {
     if (!user?.workspaces?.length) return
@@ -30,6 +33,7 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
       ? (user.workspaces.find(w => w.id === workspaceSlug) ?? user.workspaces.find(w => w.slug === workspaceSlug) ?? user.workspaces[0])
       : user.workspaces[0]
     setWorkspaceId(ws.id)
+    setUserRole(ws.role ?? "viewer")
     setSubscription(null)
     setUsage(null)
     setInvoices([])
@@ -59,7 +63,9 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
   }
 
   const handleSelectPlan = async (planId: string, interval: "monthly" | "yearly") => {
-    if (!subscription || subscription.plan === "free" || !subscription.stripeSubscriptionId) {
+    if (!subscription) return
+    const hasActiveSub = subscription.plan !== "free" && ACTIVE_STATUSES.includes(subscription.status)
+    if (!hasActiveSub) {
       try {
         const res = await billingService.createCheckout(workspaceId, { plan: planId, billingInterval: interval })
         window.location.href = res.checkoutUrl
@@ -130,11 +136,11 @@ export default function BillingView({ workspaceSlug }: { workspaceSlug?: string 
         <h1 className="text-3xl font-bold tracking-tight text-[#FFFFFF] mt-1">Billing</h1>
       </div>
 
-      <CurrentPlanCard subscription={subscription} onChangePlan={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onCancel={() => setCancelOpen(true)} onResume={handleResume} onUpgrade={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onManageBilling={handleManageBilling} />
+      <CurrentPlanCard subscription={subscription} userRole={userRole} onChangePlan={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onCancel={() => setCancelOpen(true)} onResume={handleResume} onUpgrade={() => document.getElementById("plans-grid")?.scrollIntoView({ behavior: "smooth" })} onManageBilling={handleManageBilling} />
 
       <UsageSection metrics={usageMetrics} period={period} />
 
-      <div id="plans-grid"><PlansGrid currentPlanId={subscription.plan} onSelectPlan={handleSelectPlan} /></div>
+      <div id="plans-grid"><PlansGrid currentPlanId={subscription.plan} userRole={userRole} onSelectPlan={handleSelectPlan} /></div>
 
       <InvoicesTable invoices={invoices} />
 

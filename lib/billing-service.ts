@@ -3,14 +3,12 @@ import { apiClient } from './api-client';
 export interface Subscription {
   plan: string;
   status: string;
-  billingInterval: string;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
+  billingInterval: string | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   canceledAt: string | null;
   trialEndsAt: string | null;
-  stripeCustomerId: string | null;
-  stripeSubscriptionId: string | null;
 }
 
 export interface Usage {

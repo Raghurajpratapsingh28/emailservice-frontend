@@ -20,7 +20,7 @@ export function ChangePlanModal({ targetPlanId, interval, currentSubscription, o
   const targetPlan = PLANS.find((p) => p.id === targetPlanId)
   if (!currentPlan || !targetPlan) return null
 
-  const currentInterval = (currentSubscription.billingInterval as BillingInterval) ?? "monthly"
+  const currentInterval: BillingInterval = (currentSubscription.billingInterval as BillingInterval) ?? "monthly"
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

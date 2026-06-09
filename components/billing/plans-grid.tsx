@@ -1,19 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { PLANS, BillingInterval, planPrice, CURRENT_ROLE } from "@/lib/billing-data"
+import { PLANS, BillingInterval, planPrice } from "@/lib/billing-data"
 import { CheckCircle2, Sparkles } from "lucide-react"
 
 interface Props {
   currentPlanId: string
+  userRole: string
   onSelectPlan: (planId: string, interval: BillingInterval) => void
 }
 
 const PLAN_ORDER = ["free", "starter", "growth", "pro"]
 
-export default function PlansGrid({ currentPlanId, onSelectPlan }: Props) {
+export default function PlansGrid({ currentPlanId, userRole, onSelectPlan }: Props) {
   const [interval, setInterval] = useState<BillingInterval>("monthly")
-  const isOwner = CURRENT_ROLE === "owner"
+  const isOwner = userRole === "owner"
   const currentIdx = PLAN_ORDER.indexOf(currentPlanId)
 
   return (
