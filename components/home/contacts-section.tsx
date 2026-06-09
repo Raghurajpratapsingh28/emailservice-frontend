@@ -1,12 +1,25 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Users, Plus, Upload, ArrowUpRight } from "lucide-react"
+import { contactsService } from "@/lib/contacts-service"
 
-interface Props { total: number; workspaceId: string }
+interface Props { workspaceId: string }
 
-export default function ContactsSection({ total, workspaceId }: Props) {
+export default function ContactsSection({ workspaceId }: Props) {
   const router = useRouter()
+  const [total, setTotal] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!workspaceId) return
+    setIsLoading(true)
+    contactsService.getContacts(workspaceId, { pageSize: 1 })
+      .then(res => setTotal(res.total))
+      .catch(err => console.error("Failed to load contacts:", err))
+      .finally(() => setIsLoading(false))
+  }, [workspaceId])
 
   return (
     <div className="p-5 enterprise-card flex flex-col justify-between h-full">
@@ -24,14 +37,15 @@ export default function ContactsSection({ total, workspaceId }: Props) {
         </div>
 
         <div className="flex items-end gap-3 mb-6">
-          <h2 className="text-4xl font-bold text-[#FFFFFF] tracking-tight">{total.toLocaleString()}</h2>
+          <h2 className="text-4xl font-bold text-[#FFFFFF] tracking-tight">
+            {isLoading ? "—" : (total ?? 0).toLocaleString()}
+          </h2>
           <span className="text-[12px] font-bold text-[#696CFF] mb-1.5 flex items-center gap-0.5">
             <ArrowUpRight className="w-3 h-3" /> +12.5%
           </span>
         </div>
 
         <div className="h-32 w-full flex items-end justify-between gap-1 mt-4">
-          {/* Simulated chart bars matching the dark aesthetic */}
           {[40, 65, 45, 80, 55, 90, 75, 100, 85, 110, 95, 120].map((h, i) => (
             <div key={i} className="w-full bg-[#202126] rounded-t-[4px] relative group transition-all hover:bg-[#696CFF]" style={{ height: `${(h / 120) * 100}%` }}>
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#25262B] text-[#FFFFFF] text-[10px] px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
@@ -41,7 +55,7 @@ export default function ContactsSection({ total, workspaceId }: Props) {
           ))}
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-3 mt-6">
         <button onClick={() => router.push(`/contact/${workspaceId}`)} className="py-3 enterprise-btn text-[#FFFFFF] text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer border border-[#202126] hover:border-[#696CFF] transition-all">
           <Plus className="w-4 h-4 text-[#696CFF]" /> Add Contact

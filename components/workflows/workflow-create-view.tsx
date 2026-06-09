@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
 import WorkflowGraph from "./workflow-graph"
 import { workflowsService } from "@/lib/workflows-service"
-import { defaultNodes, validateNodes, nodesToGraph, graphToNodes, type WorkflowNode } from "@/lib/workflows-data"
+import { defaultNodes, validateNodes, nodesToGraph, graphToNodes, type WorkflowNode, type WorkflowStatus } from "@/lib/workflows-data"
 
 interface Props {
   workspaceId: string
@@ -22,6 +22,7 @@ export default function WorkflowCreateView({ workspaceId }: Props) {
   const [nameError, setNameError] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [isLoadingEdit, setIsLoadingEdit] = useState(!!editId)
+  const [editStatus, setEditStatus] = useState<WorkflowStatus>("draft")
 
   useEffect(() => {
     if (!editId) return
@@ -29,6 +30,7 @@ export default function WorkflowCreateView({ workspaceId }: Props) {
       .then((res) => {
         setName(res.workflow.name)
         setNodes(res.workflow.graph ? graphToNodes(res.workflow.graph) : defaultNodes())
+        setEditStatus(res.workflow.status)
       })
       .catch(console.error)
       .finally(() => setIsLoadingEdit(false))
@@ -43,13 +45,14 @@ export default function WorkflowCreateView({ workspaceId }: Props) {
       const graph = nodesToGraph(nodes)
       if (editId) {
         await workflowsService.update(workspaceId, editId, { name: name.trim(), graph })
+        if (andPublish) await workflowsService.publish(workspaceId, editId)
       } else {
         const res = await workflowsService.create(workspaceId, { name: name.trim(), graph })
         if (andPublish) await workflowsService.publish(workspaceId, res.workflow.id)
       }
       router.push(`/flow-builder/${workspaceId}`)
-    } catch (err) {
-      console.error("Failed to save workflow:", err)
+    } catch {
+      // api-client already shows a toast with the error detail
     } finally {
       setIsSaving(false)
     }
@@ -58,6 +61,8 @@ export default function WorkflowCreateView({ workspaceId }: Props) {
   if (isLoadingEdit) return (
     <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
   )
+
+  const canPublish = editId ? editStatus === "draft" || editStatus === "paused" : true
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
@@ -104,19 +109,13 @@ export default function WorkflowCreateView({ workspaceId }: Props) {
           <button onClick={() => router.push(`/flow-builder/${workspaceId}`)} className="px-4 py-2 bg-transparent hover:bg-[#25262B] border border-transparent hover:border-[#202126] rounded-[8px] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] transition-all cursor-pointer">
             Cancel
           </button>
-          {editId ? (
-            <button onClick={() => handleSave()} disabled={isSaving} className="flex items-center gap-1.5 px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] disabled:opacity-50 text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-none transition-all cursor-pointer">
-              {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Save Changes
+          <button onClick={() => handleSave(false)} disabled={isSaving} className="flex items-center gap-1.5 px-4 py-2 bg-transparent hover:bg-[#25262B] border border-[#202126] rounded-[8px] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] disabled:opacity-50 transition-all cursor-pointer">
+            {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {editId ? "Save Changes" : "Save as Draft"}
+          </button>
+          {canPublish && (
+            <button onClick={() => handleSave(true)} disabled={isSaving || graphErrors.length > 0} className="flex items-center gap-1.5 px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] disabled:opacity-50 text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-none transition-all cursor-pointer">
+              {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {editId ? "Save & Publish" : "Create & Publish"}
             </button>
-          ) : (
-            <>
-              <button onClick={() => handleSave(false)} disabled={isSaving} className="flex items-center gap-1.5 px-4 py-2 bg-transparent hover:bg-[#25262B] border border-[#202126] rounded-[8px] text-xs font-semibold text-[#8A8D96] hover:text-[#FFFFFF] disabled:opacity-50 transition-all cursor-pointer">
-                {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Save as Draft
-              </button>
-              <button onClick={() => handleSave(true)} disabled={isSaving || graphErrors.length > 0} className="flex items-center gap-1.5 px-4 py-2 bg-[#696CFF] hover:bg-[#5A5CE6] disabled:opacity-50 text-[#FFFFFF] rounded-[12px] text-xs font-semibold shadow-none transition-all cursor-pointer">
-                {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Create & Publish
-              </button>
-            </>
           )}
         </div>
       </div>

@@ -3,17 +3,17 @@
 import { Mail, Zap, Database } from "lucide-react"
 import type { Usage } from "@/lib/billing-service"
 
-export default function UsageSection({ usage }: { usage: Usage | null }) {
+export default function UsageSection({ usage, contactsTotal }: { usage: Usage | null; contactsTotal: number | null }) {
   const metrics = [
-    { label: "Emails Sent", count: usage?.emailsSent ?? 0, limit: usage?.emailLimit ?? 10000, icon: Mail, color: "#696CFF" },
-    { label: "Contacts", count: usage?.contactsCount ?? 0, limit: usage?.contactsLimit ?? 5000, icon: Database, color: "#00E5FF" },
-    { label: "Workflows", count: usage?.workflowsCount ?? 0, limit: usage?.workflowsLimit ?? 20, icon: Zap, color: "#FF5A4F" },
+    { label: "Emails Sent", count: usage?.emails.used ?? 0, limit: usage?.emails.limit ?? 10000, icon: Mail, color: "#696CFF" },
+    { label: "Contacts", count: contactsTotal ?? usage?.contacts.used ?? 0, limit: usage?.contacts.limit ?? 5000, icon: Database, color: "#00E5FF" },
+    { label: "Workflows", count: usage?.events.used ?? 0, limit: usage?.events.limit ?? 20, icon: Zap, color: "#FF5A4F" },
   ]
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {metrics.map((m) => {
-        const pct = Math.min(100, Math.round((m.count / m.limit) * 100))
+        const pct = Math.min(100, (m.count / m.limit) * 100)
         return (
           <div key={m.label} className="p-5 enterprise-card flex flex-col justify-between">
             <div className="flex items-center justify-between mb-4">
@@ -33,7 +33,7 @@ export default function UsageSection({ usage }: { usage: Usage | null }) {
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-medium" style={{ color: m.color }}>{pct}% Used</span>
+                <span className="text-[11px] font-medium" style={{ color: m.color }}>{pct.toFixed(1)}% Used</span>
                 {pct >= 90 && <span className="text-[10px] font-bold text-[#FF5A4F] px-2 py-0.5 bg-[#FF5A4F]/10 rounded-[6px]">Warning</span>}
               </div>
               <div className="w-full h-1.5 bg-[#0D0E12] rounded-full overflow-hidden">

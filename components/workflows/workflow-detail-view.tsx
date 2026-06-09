@@ -29,7 +29,9 @@ function apiToWorkflow(w: ApiWorkflow): Workflow {
 }
 
 const EX_STATUS_CLS: Record<ApiExecution["status"], string> = {
+  queued:    "bg-[#8A8D96]/10 border-[#8A8D96]/25 text-[#8A8D96]",
   running:   "bg-[#696CFF]/10 border-[#696CFF]/25 text-[#696CFF]",
+  waiting:   "bg-[#FFB020]/10 border-[#FFB020]/25 text-[#FFB020]",
   completed: "bg-[#3CD3AD]/10 border-[#3CD3AD]/25 text-[#3CD3AD]",
   failed:    "bg-[#FF5A4F]/10 border-[#FF5A4F]/25 text-[#FF5A4F]",
 }
@@ -188,16 +190,16 @@ export default function WorkflowDetailView({ workspaceId, workflowId }: Props) {
               <tbody className="divide-y divide-[#202126]">
                 {executions.map((ex) => (
                   <tr key={ex.id} className="hover:bg-[#18191C] transition-colors">
-                    <td className="px-4 py-3 font-mono text-[10px] text-[#8A8D96]">{ex.id.slice(0, 8)}…</td>
-                    <td className="px-4 py-3 font-medium text-[10px] text-[#8A8D96]">{ex.contactId.slice(0, 8)}…</td>
+                    <td className="px-4 py-3 font-mono text-[10px] text-[#8A8D96]">{ex.id.slice(0, 8)}&hellip;</td>
+                    <td className="px-4 py-3 font-medium text-[10px] text-[#8A8D96]">{ex.contactId ? ex.contactId.slice(0, 8) + "…" : "—"}</td>
                     <td className="px-4 py-3">
                       <span className={`text-[9px] font-medium font-semibold px-2 py-0.5 border rounded-full uppercase ${EX_STATUS_CLS[ex.status]}`}>
                         {ex.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[#8A8D96] font-medium text-[10px]">{ex.currentNodeId}</td>
+                    <td className="px-4 py-3 text-[#8A8D96] font-medium text-[10px]">{ex.currentNodeId ?? "—"}</td>
                     <td className="px-4 py-3 text-[#8A8D96] font-medium whitespace-nowrap">
-                      {new Date(ex.startedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {ex.startedAt ? new Date(ex.startedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
                     </td>
                     <td className="px-4 py-3 text-[#8A8D96] font-medium whitespace-nowrap">
                       {ex.completedAt ? new Date(ex.completedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}

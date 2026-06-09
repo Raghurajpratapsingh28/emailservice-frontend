@@ -25,9 +25,9 @@ interface Props { workspaceId: string }
 export interface HomeData {
   usage: Usage | null
   subscription: Subscription | null
+  contactsTotal: number | null
   campaigns: Campaign[]
   campaignsTotal: number
-  contactsTotal: number
   segments: Array<{ id: string; name: string; contactCount: number }>
   segmentsTotal: number
   workflowStats: { total: number; published: number; executions: { total: number; completed: number; failed: number; running: number } }
@@ -62,7 +62,7 @@ export default function HomeDashboard({ workspaceId }: Props) {
         subscription: subscription.status === "fulfilled" ? subscription.value : null,
         campaigns: campaignsRes.status === "fulfilled" ? campaignsRes.value.items : [],
         campaignsTotal: campaignsRes.status === "fulfilled" ? campaignsRes.value.total : 0,
-        contactsTotal: contactsRes.status === "fulfilled" ? contactsRes.value.total : 0,
+        contactsTotal: contactsRes.status === "fulfilled" ? contactsRes.value.total : null,
         segments: segmentsRes.status === "fulfilled" ? segmentsRes.value.items.map(s => ({ id: s.id, name: s.name, contactCount: s.contactCount })) : [],
         segmentsTotal: segmentsRes.status === "fulfilled" ? segmentsRes.value.total : 0,
         workflowStats: {
@@ -110,7 +110,7 @@ export default function HomeDashboard({ workspaceId }: Props) {
         <PlanCard subscription={data?.subscription ?? null} workspaceId={workspaceId} />
       </div>
 
-      <UsageSection usage={data?.usage ?? null} />
+      <UsageSection usage={data?.usage ?? null} contactsTotal={data?.contactsTotal ?? null} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <CampaignsSection campaigns={data?.campaigns ?? []} total={data?.campaignsTotal ?? 0} workspaceId={workspaceId} />
@@ -121,7 +121,7 @@ export default function HomeDashboard({ workspaceId }: Props) {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2"><ContactsSection total={data?.contactsTotal ?? 0} workspaceId={workspaceId} /></div>
+        <div className="xl:col-span-2"><ContactsSection workspaceId={workspaceId} /></div>
         <SegmentsSection segments={data?.segments ?? []} total={data?.segmentsTotal ?? 0} workspaceId={workspaceId} />
       </div>
     </motion.div>

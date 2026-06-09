@@ -26,11 +26,18 @@ export interface ApiWorkflow {
 
 export interface ApiExecution {
   id: string;
-  contactId: string;
-  status: 'running' | 'completed' | 'failed';
-  currentNodeId: string;
-  startedAt: string;
+  workspaceId: string;
+  workflowId: string;
+  contactId: string | null;
+  status: 'queued' | 'running' | 'waiting' | 'completed' | 'failed';
+  currentNodeId: string | null;
+  startedAt: string | null;
   completedAt: string | null;
+  failedAt: string | null;
+  failureReason: string | null;
+  retryCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const workflowsService = {

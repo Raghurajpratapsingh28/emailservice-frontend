@@ -14,7 +14,7 @@ export type WorkflowNode = {
   config: TriggerConfig | EmailConfig | DelayConfig | Record<string, never>
 }
 
-export type ExecutionStatus = "running" | "completed" | "failed"
+export type ExecutionStatus = "queued" | "running" | "waiting" | "completed" | "failed"
 
 export type WorkflowExecution = {
   id: string
@@ -131,10 +131,14 @@ export function validateNodes(nodes: WorkflowNode[]): string[] {
       const c = n.config as EmailConfig
       if (!c.subject.trim()) errors.push(`Node ${i + 1}: Email subject required.`)
       if (!c.fromEmail.trim()) errors.push(`Node ${i + 1}: From email required.`)
+      if (!c.htmlBody.trim()) errors.push(`Node ${i + 1}: Email HTML body required.`)
     }
     if (n.type === "delay") {
       const c = n.config as DelayConfig
+      const secs = c.duration * UNIT_TO_SECONDS[c.unit]
       if (!c.duration || c.duration < 1) errors.push(`Node ${i + 1}: Delay duration must be ≥ 1.`)
+      else if (secs < 60) errors.push(`Node ${i + 1}: Minimum delay is 1 minute.`)
+      else if (secs > 31536000) errors.push(`Node ${i + 1}: Maximum delay is 365 days.`)
     }
   })
   return errors

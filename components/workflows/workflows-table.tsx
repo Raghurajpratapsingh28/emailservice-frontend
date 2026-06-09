@@ -21,7 +21,7 @@ export default function WorkflowsTable({ workflows, onView, onEdit, onPublish, o
         <div className="w-12 h-12 rounded-[12px] bg-transparent border border-[#202126] flex items-center justify-center text-[#8A8D96] mb-4">
           <GitBranch className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-semibold text-[#FFFFFF]">No Workspaces Yet</h3>
+        <h3 className="text-base font-semibold text-[#FFFFFF]">No Workflows Yet</h3>
         <p className="text-xs text-[#8A8D96] mt-1.5 max-w-[280px] leading-relaxed">
           Create your first workflow to automate contact journeys with triggers, emails, and delays.
         </p>
@@ -70,7 +70,7 @@ export default function WorkflowsTable({ workflows, onView, onEdit, onPublish, o
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Btn onClick={() => onView(w)} title="View" color="text-[#8A8D96]"><Eye className="w-3.5 h-3.5" /></Btn>
-                    {w.status === "draft" && <Btn onClick={() => onEdit(w)} title="Edit" color="text-[#FFFFFF]"><Pencil className="w-3.5 h-3.5" /></Btn>}
+                    {(w.status === "draft" || w.status === "paused") && <Btn onClick={() => onEdit(w)} title="Edit" color="text-[#FFFFFF]"><Pencil className="w-3.5 h-3.5" /></Btn>}
                     {w.status === "draft" && <Btn onClick={() => onPublish(w)} title="Publish" color="text-[#3CD3AD]"><Zap className="w-3.5 h-3.5" /></Btn>}
                     {w.status === "published" && <Btn onClick={() => onPause(w)} title="Pause" color="text-[#FFB020]"><Pause className="w-3.5 h-3.5" /></Btn>}
                     {w.status === "paused" && <Btn onClick={() => onResume(w)} title="Resume" color="text-[#3CD3AD]"><Play className="w-3.5 h-3.5" /></Btn>}

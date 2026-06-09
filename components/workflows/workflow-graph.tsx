@@ -3,7 +3,7 @@
 import { useState } from "react"
 import {
   WorkflowNode, NodeType, TriggerConfig, EmailConfig, DelayConfig,
-  makeNode, nodeLabel, validateNodes,
+  makeNode, nodeLabel, validateNodes, UNIT_TO_SECONDS,
 } from "@/lib/workflows-data"
 import { Zap, Mail, Clock, Square, Plus, Trash2, X, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react"
 
@@ -56,11 +56,12 @@ export default function WorkflowGraph({ nodes, onChange, readOnly = false }: Pro
     }
     if (n.type === "email") {
       const c = n.config as EmailConfig
-      return !c.subject.trim() || !c.fromEmail
+      return !c.subject.trim() || !c.fromEmail.trim() || !c.htmlBody.trim()
     }
     if (n.type === "delay") {
       const c = n.config as DelayConfig
-      return !c.duration || c.duration < 1
+      const secs = c.duration * UNIT_TO_SECONDS[c.unit]
+      return !c.duration || c.duration < 1 || secs < 60 || secs > 31536000
     }
     return false
   }
