@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { Suspense, useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Eye, EyeOff, CheckCircle } from "lucide-react"
@@ -10,6 +10,18 @@ import { authService } from "@/lib/auth-service"
 import { toast } from "sonner"
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </main>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [token, setToken] = useState("")

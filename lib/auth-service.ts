@@ -167,7 +167,9 @@ export const authService = {
   },
 
   async acceptInvite(data: AcceptInviteRequest): Promise<AcceptInviteResponse> {
-    return apiClient.post('/auth/accept-invite', data, { skipAuth: !data.password });
+    // New users (with password) skip auth — they don't have a token yet.
+    // Existing users (no password) must send their Bearer token.
+    return apiClient.post('/auth/accept-invite', data, { skipAuth: !!data.password });
   },
 
   async updateProfile(data: UpdateProfileRequest): Promise<User> {

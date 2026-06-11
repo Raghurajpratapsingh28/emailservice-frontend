@@ -2,50 +2,49 @@ import Image from "next/image"
 
 export default function ShowcaseSidebar() {
   return (
-    <div className="hidden md:flex md:w-1/2 p-8 md:p-16 flex-col justify-between relative bg-[#1b1614] md:min-h-screen overflow-hidden">
-      
-      {/* Top Tagline */}
-      <div className="z-10">
-        <p className="text-xs text-white/50 font-light tracking-wide">
-          Global customer engagement made simple – online campaign solutions for you.
-        </p>
-      </div>
-
-      {/* Mid Showcase Header & Circular BG Lines */}
-      <div className="my-auto py-12 flex flex-col items-center justify-center relative w-full">
+    <div className="hidden md:flex md:w-[45%] lg:w-[40%] p-2 flex-col justify-stretch relative h-[calc(100vh-2rem)] min-h-[600px] select-none">
+      <div className="relative w-full h-full rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col justify-between p-8 lg:p-12 border border-white/5 shadow-2xl bg-[#0a0a0a]">
         
-        {/* Subtle concentric rings in background */}
-        <div className="absolute w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] rounded-full border border-white/[0.04] flex items-center justify-center pointer-events-none z-0">
-          <div className="w-[180px] h-[180px] sm:w-[240px] sm:h-[240px] rounded-full border border-white/[0.03] flex items-center justify-center">
-            <div className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] rounded-full border border-white/[0.02]" />
-          </div>
-        </div>
-
-        <h2 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.1] text-center z-10 font-sans max-w-sm">
-          Manage <br />
-          <span className="font-light text-white/90">your growth</span>
-        </h2>
-      </div>
-
-      {/* Bottom Smartphone Mockup (Fits beautifully in the lower panel) */}
-      <div className="w-[90%] sm:w-[80%] md:w-[110%] lg:w-[100%] h-[320px] sm:h-[380px] md:h-[420px] relative mx-auto md:ml-4 mt-auto z-10 translate-y-8 md:translate-y-16">
+        {/* Background Image */}
         <Image
-          src="/hand-phone.png"
-          alt="EngageIQ Dashboard Showcase"
+          src="/login_left_bg.png"
+          alt="Abstract Background"
           fill
           priority
-          className="object-contain object-bottom"
-          sizes="(max-width: 768px) 100vw, 45vw"
+          className="object-cover object-center z-0 opacity-95"
         />
-      </div>
+        
+        {/* Subtle Dark Gradient Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-0" />
 
-      {/* Small branding badge overlay */}
-      <div className="absolute bottom-6 left-6 z-20 md:block hidden">
-        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-[#1b1614]/80 backdrop-blur-md">
-          <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-orange-500 to-red-500" />
+        {/* Top Branding Logo */}
+        <div className="z-10 flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center border border-white/10 shadow-lg p-1.5 backdrop-blur-md">
+            <Image 
+              src="/logos/logo.png" 
+              alt="Mailvex Logo" 
+              width={24} 
+              height={24} 
+              className="w-full h-full object-contain"
+              priority
+            />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white font-sans drop-shadow-md">
+            Mailvex
+          </span>
+        </div>
+
+        {/* Bottom Tagline */}
+        <div className="z-10 space-y-1 text-white pr-4">
+          <h2 className="text-3xl lg:text-[40px] xl:text-[44px] font-extralight leading-[1.2] tracking-tight">
+            Be a Part of
+          </h2>
+          <h2 className="text-3xl lg:text-[40px] xl:text-[44px] font-extralight leading-[1.2] tracking-tight">
+            Something <span className="font-bold text-white">Beautiful</span>
+          </h2>
         </div>
       </div>
-
     </div>
   )
 }
+

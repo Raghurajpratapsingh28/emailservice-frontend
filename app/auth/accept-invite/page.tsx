@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { Suspense, useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Eye, EyeOff, CheckCircle } from "lucide-react"
@@ -11,11 +11,22 @@ import { authService } from "@/lib/auth-service"
 import { toast } from "sonner"
 
 export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </main>
+    }>
+      <AcceptInviteContent />
+    </Suspense>
+  )
+}
+
+function AcceptInviteContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, user, storeTokensAndUser } = useAuth()
   const [token, setToken] = useState("")
-  const [isNewUser, setIsNewUser] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [formData, setFormData] = useState({
@@ -42,54 +53,66 @@ export default function AcceptInvitePage() {
 
   const validatePassword = (pwd: string) => {
     if (pwd.length < 12) return "Password must be at least 12 characters"
-    if (!/[A-Z]/.test(pwd)) return "Password must contain uppercase letter"
-    if (!/[a-z]/.test(pwd)) return "Password must contain lowercase letter"
+    if (!/[A-Z]/.test(pwd)) return "Password must contain an uppercase letter"
+    if (!/[a-z]/.test(pwd)) return "Password must contain a lowercase letter"
     if (!/[0-9]/.test(pwd)) return "Password must contain a number"
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return "Password must contain special character"
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return "Password must contain a special character"
     return ""
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Existing authenticated user — accept directly
+  const handleExistingUserAccept = async () => {
+    setIsLoading(true)
+    setError("")
+    try {
+      await authService.acceptInvite({ token })
+      setIsSuccess(true)
+      toast.success("Invite accepted successfully!")
+      setTimeout(() => router.push("/home"), 2000)
+    } catch (err: any) {
+      setError(err.message || "Failed to accept invite")
+      toast.error(err.message || "Failed to accept invite")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // New user — create account and store session
+  const handleNewUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isNewUser) {
-      const passwordError = validatePassword(formData.password)
-      if (passwordError) {
-        setError(passwordError)
-        return
-      }
+    const passwordError = validatePassword(formData.password)
+    if (passwordError) {
+      setError(passwordError)
+      return
     }
 
     setIsLoading(true)
     setError("")
-    
+
     try {
       const response = await authService.acceptInvite({
         token,
-        ...(isNewUser && {
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-        }),
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
       })
-      
-      setIsSuccess(true)
-      toast.success("Invite accepted successfully!")
-      
-      if (response.tokens) {
-        // New user - tokens returned, will be handled by auth context
-        setTimeout(() => router.push("/home"), 2000)
-      } else {
-        // Existing user - just added to workspace
-        setTimeout(() => router.push("/home"), 2000)
+
+      // Store tokens so the user is logged in immediately
+      if (response.tokens?.accessToken) {
+        await storeTokensAndUser(response.tokens)
       }
-    } catch (error: any) {
-      if (error.code === "INVITE_REQUIRES_LOGIN") {
-        setIsNewUser(false)
-        setError("Please sign in to accept this invite")
+
+      setIsSuccess(true)
+      toast.success("Account created and invite accepted!")
+      setTimeout(() => router.push("/home"), 2000)
+    } catch (err: any) {
+      if (err.code === "INVITE_REQUIRES_LOGIN") {
+        // Email already has an account — redirect to login with return URL
+        toast.info("This email already has an account. Please sign in to accept.")
+        router.push(`/signin?redirect=/auth/accept-invite?token=${encodeURIComponent(token)}`)
       } else {
-        setError(error.message || "Failed to accept invite")
-        toast.error(error.message || "Failed to accept invite")
+        setError(err.message || "Failed to accept invite")
+        toast.error(err.message || "Failed to accept invite")
       }
     } finally {
       setIsLoading(false)
@@ -99,7 +122,7 @@ export default function AcceptInvitePage() {
   if (isSuccess) {
     return (
       <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 p-4">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-12 text-center"
@@ -107,9 +130,7 @@ export default function AcceptInvitePage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-neutral-900 mb-4">
-            Welcome to the Team!
-          </h1>
+          <h1 className="text-3xl font-bold text-neutral-900 mb-4">Welcome to the Team!</h1>
           <p className="text-neutral-600 mb-8">
             You've successfully joined the workspace. Redirecting...
           </p>
@@ -118,70 +139,88 @@ export default function AcceptInvitePage() {
     )
   }
 
-  if (isAuthenticated && !isNewUser) {
+  // Wait for auth state before deciding which view to show
+  if (authLoading) {
+    return (
+      <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </main>
+    )
+  }
+
+  // Authenticated user — one-click accept
+  if (isAuthenticated && user) {
     return (
       <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 p-4">
-        <motion.div 
+        <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-12 text-center"
         >
-          <h1 className="text-3xl font-bold text-neutral-900 mb-4">
-            Accept Workspace Invite
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <Image src="/logo.svg" alt="EngageIQ Logo" width={32} height={32} className="w-8 h-8" />
+            <span className="text-2xl font-bold text-neutral-900">
+              Engage<span className="text-orange-500">IQ</span>
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold text-neutral-900 mb-4">Accept Workspace Invite</h1>
           <p className="text-neutral-600 mb-8">
-            You're signed in as <strong>{user?.email}</strong>
+            You're signed in as <strong>{user.email}</strong>. Click below to join the workspace.
           </p>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+              {error}
+            </div>
+          )}
           <button
-            onClick={handleSubmit}
-            disabled={isLoading}
+            onClick={handleExistingUserAccept}
+            disabled={isLoading || !token}
             className="w-full py-3.5 bg-gradient-to-r from-[#ff5e36] to-[#ff2a6d] hover:brightness-105 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50"
           >
             {isLoading ? "Accepting..." : "Accept Invite"}
           </button>
-          {error && (
-            <p className="mt-4 text-sm text-red-600">{error}</p>
-          )}
+          <p className="mt-6 text-sm text-neutral-500">
+            Not you?{" "}
+            <Link
+              href={`/signin?redirect=/auth/accept-invite?token=${encodeURIComponent(token)}`}
+              className="text-orange-500 hover:underline font-semibold"
+            >
+              Sign in with a different account
+            </Link>
+          </p>
         </motion.div>
       </main>
     )
   }
 
+  // Unauthenticated — new user registration form
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 p-4">
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12"
       >
         <div className="flex items-center gap-2 mb-8">
-          <Image 
-            src="/logo.svg" 
-            alt="EngageIQ Logo" 
-            width={32} 
-            height={32}
-            className="w-8 h-8"
-          />
+          <Image src="/logo.svg" alt="EngageIQ Logo" width={32} height={32} className="w-8 h-8" />
           <span className="text-2xl font-bold text-neutral-900">
             Engage<span className="text-orange-500">IQ</span>
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          Join Workspace
-        </h1>
+        <h1 className="text-3xl font-bold text-neutral-900 mb-2">Join Workspace</h1>
         <p className="text-neutral-600 mb-8">
           You've been invited to join a workspace. Create your account to get started.
         </p>
 
-        {error && !token && (
+        {!token && error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleNewUserSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="firstName" className="text-sm font-semibold text-neutral-700">
               First Name
@@ -239,7 +278,7 @@ export default function AcceptInvitePage() {
             </div>
           </div>
 
-          {error && token && (
+          {token && error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
               {error}
             </div>
@@ -256,7 +295,10 @@ export default function AcceptInvitePage() {
 
         <div className="mt-8 text-center text-sm text-neutral-600">
           Already have an account?{" "}
-          <Link href="/signin" className="text-orange-500 hover:underline font-semibold">
+          <Link
+            href={`/signin?redirect=/auth/accept-invite?token=${encodeURIComponent(token)}`}
+            className="text-orange-500 hover:underline font-semibold"
+          >
             Sign In
           </Link>
         </div>

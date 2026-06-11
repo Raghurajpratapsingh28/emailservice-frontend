@@ -10,10 +10,11 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest, redirectTo?: string) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  storeTokensAndUser: (tokens: TokenResponse) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,20 +72,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     scheduleTokenRefresh(tokens.expiresIn);
   }, [scheduleTokenRefresh]);
 
-  const login = useCallback(async (data: LoginRequest) => {
+  const login = useCallback(async (data: LoginRequest, redirectTo?: string) => {
     const response = await authService.login(data);
-    console.log('Login response:', response);
     // Handle both { tokens } and direct tokens response
     const tokens = response.tokens || response;
     if (!tokens?.accessToken) {
-      console.error('Invalid response structure:', response);
       throw new Error('Invalid login response');
     }
     setTokens(tokens);
     const userData = await authService.getMe();
     setUser(userData);
-    router.push('/home');
+    router.push(redirectTo || '/home');
   }, [setTokens, router]);
+
+  const storeTokensAndUser = useCallback(async (tokens: TokenResponse) => {
+    setTokens(tokens);
+    const userData = await authService.getMe();
+    setUser(userData);
+  }, [setTokens]);
 
   const signup = useCallback(async (data: SignupRequest) => {
     const response = await authService.signup(data);
@@ -158,6 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signup,
     logout,
     refreshUser,
+    storeTokensAndUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

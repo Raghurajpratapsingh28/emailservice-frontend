@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { Suspense, useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { CheckCircle, XCircle, Loader2 } from "lucide-react"
@@ -9,6 +9,18 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { authService } from "@/lib/auth-service"
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </main>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
+  )
+}
+
+function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")

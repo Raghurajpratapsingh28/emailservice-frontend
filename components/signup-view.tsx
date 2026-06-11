@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Eye, EyeOff, User, Globe, ChevronDown } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
 import { useWorkspace } from "@/lib/workspace-context"
@@ -86,55 +85,35 @@ export default function SignupView() {
   }
 
   return (
-    <main className="min-h-screen w-full flex flex-col md:flex-row bg-white md:bg-[#1b1614] font-sans selection:bg-orange-500/20 text-[#2a2926] overflow-x-hidden">
+    <main className="min-h-screen w-full flex flex-col md:flex-row bg-black font-sans selection:bg-[#fabc09]/20 text-white overflow-x-hidden p-3 sm:p-4">
       
       {/* Left Panel: Shared Showcase Sidebar */}
       <ShowcaseSidebar />
 
-      {/* Right Panel: White Card Form */}
-      <div className="w-full md:w-1/2 bg-white md:rounded-l-[48px] lg:rounded-l-[64px] flex flex-col justify-between p-6 sm:p-12 md:p-16 min-h-screen relative z-20 shadow-2xl">
+      {/* Right Panel: Form Panel */}
+      <div className="flex-1 flex flex-col justify-center items-center py-10 px-4 sm:px-6 md:px-12 lg:px-16 relative z-20 min-h-[calc(100vh-2rem)] bg-black">
         
-        {/* Top Header Navigation */}
-        <div className="flex items-center justify-between w-full mb-6 md:mb-0">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Image 
-              src="/logos/logo.png" 
-              alt="EngageIQ Logo" 
-              width={160} 
-              height={48}
-              className="w-40 h-auto object-contain"
-              priority
-            />
-          </div>
-
-          {/* Top Right Toggle */}
-          <div>
-            <Link 
-              href="/signin" 
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
-            >
-              <User className="w-4 h-4 text-neutral-400" />
-              <span>Sign In</span>
-            </Link>
-          </div>
-        </div>
-
         {/* Signup Form Container */}
         <motion.div 
-          initial={{ x: 60, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.6 }}
-          className="my-auto max-w-[420px] w-full mx-auto py-4 md:py-8"
+          className="w-full max-w-[400px] flex flex-col justify-center my-auto"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-900 mb-6 sm:mb-8 tracking-tight font-sans text-center sm:text-left">
-            Sign Up
-          </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="text-center md:text-left mb-8">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-white mb-2 tracking-tight">
+              Sign Up
+            </h1>
+            <p className="text-sm text-neutral-400">
+              Enter your details to create your account
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* First Name Field */}
-            <div className="space-y-1">
-              <label htmlFor="firstName" className="text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-1">
+            <div className="space-y-2">
+              <label htmlFor="firstName" className="text-sm font-medium text-neutral-300">
                 First name
               </label>
               <input
@@ -144,15 +123,15 @@ export default function SignupView() {
                 value={formData.firstName}
                 onChange={handleChange}
                 placeholder="Amélie"
-                className={`w-full px-5 py-3 sm:py-4 bg-white border ${errors.firstName ? 'border-red-500' : 'border-neutral-200'} rounded-2xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all font-medium`}
+                className={`w-full px-4 py-3 bg-[#121212] border ${errors.firstName ? 'border-red-500/55 focus:ring-red-500/20' : 'border-neutral-800 focus:ring-[#fabc09]/20'} rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-4 focus:border-[#fabc09] transition-all font-normal`}
                 required
               />
               {errors.firstName && <p className="text-xs text-red-500 pl-1">{errors.firstName}</p>}
             </div>
 
             {/* Last Name Field */}
-            <div className="space-y-1">
-              <label htmlFor="lastName" className="text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-1">
+            <div className="space-y-2">
+              <label htmlFor="lastName" className="text-sm font-medium text-neutral-300">
                 Last name
               </label>
               <input
@@ -162,15 +141,15 @@ export default function SignupView() {
                 value={formData.lastName}
                 onChange={handleChange}
                 placeholder="Laurent"
-                className={`w-full px-5 py-3 sm:py-4 bg-white border ${errors.lastName ? 'border-red-500' : 'border-neutral-200'} rounded-2xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all font-medium`}
+                className={`w-full px-4 py-3 bg-[#121212] border ${errors.lastName ? 'border-red-500/55 focus:ring-red-500/20' : 'border-neutral-800 focus:ring-[#fabc09]/20'} rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-4 focus:border-[#fabc09] transition-all font-normal`}
                 required
               />
               {errors.lastName && <p className="text-xs text-red-500 pl-1">{errors.lastName}</p>}
             </div>
 
             {/* Email Field */}
-            <div className="space-y-1">
-              <label htmlFor="email" className="text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-1">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-neutral-300">
                 Email address
               </label>
               <input
@@ -180,15 +159,15 @@ export default function SignupView() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="amelie.laurent@example.com"
-                className={`w-full px-5 py-3 sm:py-4 bg-white border ${errors.email ? 'border-red-500' : 'border-neutral-200'} rounded-2xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all font-medium`}
+                className={`w-full px-4 py-3 bg-[#121212] border ${errors.email ? 'border-red-500/55 focus:ring-red-500/20' : 'border-neutral-800 focus:ring-[#fabc09]/20'} rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-4 focus:border-[#fabc09] transition-all font-normal`}
                 required
               />
               {errors.email && <p className="text-xs text-red-500 pl-1">{errors.email}</p>}
             </div>
 
             {/* Workspace Name Field */}
-            <div className="space-y-1">
-              <label htmlFor="workspaceName" className="text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-1">
+            <div className="space-y-2">
+              <label htmlFor="workspaceName" className="text-sm font-medium text-neutral-300">
                 Workspace name
               </label>
               <input
@@ -198,15 +177,15 @@ export default function SignupView() {
                 value={formData.workspaceName}
                 onChange={handleChange}
                 placeholder="Acme Corp"
-                className={`w-full px-5 py-3 sm:py-4 bg-white border ${errors.workspaceName ? 'border-red-500' : 'border-neutral-200'} rounded-2xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all font-medium`}
+                className={`w-full px-4 py-3 bg-[#121212] border ${errors.workspaceName ? 'border-red-500/55 focus:ring-red-500/20' : 'border-neutral-800 focus:ring-[#fabc09]/20'} rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-4 focus:border-[#fabc09] transition-all font-normal`}
                 required
               />
               {errors.workspaceName && <p className="text-xs text-red-500 pl-1">{errors.workspaceName}</p>}
             </div>
 
             {/* Password Field */}
-            <div className="space-y-1">
-              <label htmlFor="password" className="text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-1">
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-neutral-300">
                 Password
               </label>
               <div className="relative">
@@ -216,20 +195,20 @@ export default function SignupView() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Min 12 chars, uppercase, lowercase, number, special"
-                  className={`w-full px-5 py-3 sm:py-4 bg-white border ${errors.password ? 'border-red-500' : 'border-neutral-200'} rounded-2xl text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all font-medium pr-12`}
+                  placeholder="Min 12 characters, strong"
+                  className={`w-full px-4 py-3 bg-[#121212] border ${errors.password ? 'border-red-500/55 focus:ring-red-500/20' : 'border-neutral-800 focus:ring-[#fabc09]/20'} rounded-xl text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-4 focus:border-[#fabc09] transition-all font-normal pr-12`}
                   required
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors focus:outline-none"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="w-5 h-5 stroke-[1.5]" />
+                    <EyeOff className="w-4 h-4 stroke-[1.5]" />
                   ) : (
-                    <Eye className="w-5 h-5 stroke-[1.5]" />
+                    <Eye className="w-4 h-4 stroke-[1.5]" />
                   )}
                 </button>
               </div>
@@ -237,13 +216,13 @@ export default function SignupView() {
             </div>
 
             {/* Terms and conditions notice */}
-            <p className="text-xs text-neutral-500 leading-relaxed font-light pl-1">
+            <p className="text-xs text-neutral-500 leading-relaxed font-light pl-0.5">
               By signing up, you agree to our{" "}
-              <Link href="/terms" className="text-orange-500 hover:underline font-medium">
+              <Link href="/terms" className="text-[#fabc09] hover:underline font-medium">
                 Terms of Service
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="text-orange-500 hover:underline font-medium">
+              <Link href="/privacy" className="text-[#fabc09] hover:underline font-medium">
                 Privacy Policy
               </Link>
               .
@@ -253,51 +232,30 @@ export default function SignupView() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 sm:py-4.5 bg-gradient-to-r from-[#ff5e36] to-[#ff2a6d] hover:brightness-105 active:scale-[0.995] text-white font-semibold rounded-2xl text-base tracking-wide transition-all shadow-xl shadow-orange-500/10 flex items-center justify-center gap-2 cursor-pointer duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-[#fabc09] hover:bg-[#e2a806] active:scale-[0.99] text-black font-semibold rounded-xl text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span>Creating Account...</span>
                 </>
               ) : (
-                <>
-                  <span>Create Account</span>
-                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[2.5]">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </>
+                "Create Account"
               )}
             </button>
+
+            {/* Link to Login */}
+            <div className="text-center text-sm text-neutral-400 mt-6">
+              Already a member?
+              <Link href="/signin" className="text-[#fabc09] font-semibold hover:underline ml-1">
+                Login
+              </Link>
+            </div>
           </form>
         </motion.div>
-
-        {/* Footer Area */}
-        <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-400 border-t border-neutral-100 pt-4 mt-6 sm:pt-6 sm:mt-8 w-full gap-4 md:gap-0">
-          {/* Copyright */}
-          <div>
-            <span>© 2005-2026 EngageIQ Inc.</span>
-          </div>
-
-          {/* Help & Language selectors */}
-          <div className="flex items-center gap-6">
-            <Link href="/contact" className="hover:text-neutral-800 transition-colors font-medium">
-              Contact Us
-            </Link>
-
-            {/* Language Selector */}
-            <div className="flex items-center gap-1.5 cursor-pointer hover:text-neutral-800 transition-colors font-medium">
-              <Globe className="w-3.5 h-3.5 text-neutral-400" />
-              <span>English</span>
-              <ChevronDown className="w-3 h-3 text-neutral-400" />
-            </div>
-          </div>
-        </div>
-
       </div>
 
     </main>
