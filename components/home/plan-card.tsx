@@ -1,11 +1,11 @@
 "use client"
 
 import { Calendar, Sparkles } from "lucide-react"
-import type { Subscription } from "@/lib/billing-service"
-import { billingService } from "@/lib/billing-service"
-import { toast } from "sonner"
+import type { WorkspaceSummary } from "@/lib/analytics-service"
 
-interface Props { subscription: Subscription | null; workspaceId: string }
+type SubscriptionData = WorkspaceSummary["subscription"]
+
+interface Props { subscription: SubscriptionData; workspaceId: string; onPortal: () => void }
 
 interface PlanTheme {
   badge: string
@@ -66,7 +66,7 @@ const PLAN_THEMES: Record<string, PlanTheme> = {
   },
 }
 
-export default function PlanCard({ subscription, workspaceId }: Props) {
+export default function PlanCard({ subscription, onPortal }: Props) {
   const plan = subscription?.plan ?? "free"
   const interval = subscription?.billingInterval ?? "—"
   const renewal = subscription?.currentPeriodEnd
@@ -75,13 +75,6 @@ export default function PlanCard({ subscription, workspaceId }: Props) {
   const cancelPending = subscription?.cancelAtPeriodEnd
 
   const theme = PLAN_THEMES[plan.toLowerCase()] ?? PLAN_THEMES.pro
-
-  const handlePortal = async () => {
-    try {
-      const res = await billingService.createPortal(workspaceId)
-      window.open(res.url, "_blank")
-    } catch (e: any) { toast.error(e.message) }
-  }
 
   return (
     <div className={`p-5 enterprise-card flex flex-col justify-between h-full border ${theme.border} ${theme.glow} transition-all duration-300`}>
@@ -100,7 +93,7 @@ export default function PlanCard({ subscription, workspaceId }: Props) {
         </div>
         {cancelPending && <p className="text-[11px] text-[#FF5A4F] font-medium mt-1">Cancellation pending at period end</p>}
       </div>
-      <button onClick={handlePortal} className={`mt-6 w-full py-3 ${theme.button} rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all duration-200`}>
+      <button onClick={onPortal} className={`mt-6 w-full py-3 ${theme.button} rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all duration-200`}>
         Manage Subscription <Sparkles className="w-4 h-4" />
       </button>
     </div>

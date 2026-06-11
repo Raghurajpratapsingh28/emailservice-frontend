@@ -1,128 +1,155 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, RefreshCw, Loader2 } from "lucide-react"
-import { billingService, type Subscription, type Usage } from "@/lib/billing-service"
-import { campaignsService } from "@/lib/campaigns-service"
-import { contactsService } from "@/lib/contacts-service"
-import { segmentsService } from "@/lib/segments-service"
-import { workflowsService } from "@/lib/workflows-service"
-import { domainsService } from "@/lib/domains-service"
-import type { Campaign } from "@/lib/campaigns-data"
-import UsageSection from "./usage-section"
+import { analyticsService, type WorkspaceSummary } from "@/lib/analytics-service"
+import { billingService } from "@/lib/billing-service"
+import QuickActions from "./quick-actions"
 import PlanCard from "./plan-card"
+import UsageSection from "./usage-section"
 import CampaignsSection from "./campaigns-section"
+import WorkflowsSection from "./workflows-section"
 import ContactsSection from "./contacts-section"
 import SegmentsSection from "./segments-section"
-import WorkflowsSection from "./workflows-section"
 import DomainsSection from "./domains-section"
-import QuickActions from "./quick-actions"
+import MembersSection from "./members-section"
+import DeliveryStatsSection from "./delivery-stats-section"
 
 interface Props { workspaceId: string }
 
-export interface HomeData {
-  usage: Usage | null
-  subscription: Subscription | null
-  contactsTotal: number | null
-  campaigns: Campaign[]
-  campaignsTotal: number
-  segments: Array<{ id: string; name: string; contactCount: number }>
-  segmentsTotal: number
-  workflowStats: { total: number; published: number; executions: { total: number; completed: number; failed: number; running: number } }
-  domainsVerified: number
-  domainsPending: number
-}
-
 export default function HomeDashboard({ workspaceId }: Props) {
   const router = useRouter()
-  const [data, setData] = useState<HomeData | null>(null)
+  const [data, setData] = useState<WorkspaceSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  const load = async (refresh = false) => {
+  const load = useCallback(async (refresh = false) => {
     if (refresh) setIsRefreshing(true)
     try {
-      const [usage, subscription, campaignsRes, contactsRes, segmentsRes, workflowsRes, domainsRes] = await Promise.allSettled([
-        billingService.getUsage(workspaceId),
-        billingService.getSubscription(workspaceId),
-        campaignsService.list(workspaceId, { pageSize: 5 }),
-        contactsService.getContacts(workspaceId, { pageSize: 1 }),
-        segmentsService.listSegments(workspaceId, { pageSize: 5 }),
-        workflowsService.list(workspaceId, { pageSize: 100 }),
-        domainsService.list(workspaceId, { pageSize: 100 }),
-      ])
-
-      const workflows = workflowsRes.status === "fulfilled" ? workflowsRes.value.items : []
-      const domains = domainsRes.status === "fulfilled" ? domainsRes.value.items : []
-
-      setData({
-        usage: usage.status === "fulfilled" ? usage.value : null,
-        subscription: subscription.status === "fulfilled" ? subscription.value : null,
-        campaigns: campaignsRes.status === "fulfilled" ? campaignsRes.value.items : [],
-        campaignsTotal: campaignsRes.status === "fulfilled" ? campaignsRes.value.total : 0,
-        contactsTotal: contactsRes.status === "fulfilled" ? contactsRes.value.total : null,
-        segments: segmentsRes.status === "fulfilled" ? segmentsRes.value.items.map(s => ({ id: s.id, name: s.name, contactCount: s.contactCount })) : [],
-        segmentsTotal: segmentsRes.status === "fulfilled" ? segmentsRes.value.total : 0,
-        workflowStats: {
-          total: workflowsRes.status === "fulfilled" ? workflowsRes.value.total : 0,
-          published: workflows.filter(w => w.status === "published").length,
-          executions: workflows.reduce((acc, w) => ({
-            total: acc.total + (w.executionStats?.total ?? 0),
-            completed: acc.completed + (w.executionStats?.completed ?? 0),
-            failed: acc.failed + (w.executionStats?.failed ?? 0),
-            running: acc.running + (w.executionStats?.running ?? 0),
-          }), { total: 0, completed: 0, failed: 0, running: 0 }),
-        },
-        domainsVerified: domains.filter(d => d.status === "verified").length,
-        domainsPending: domains.filter(d => d.status !== "verified" && d.status !== "deleted" && d.status !== "deleting").length,
-      })
+      const summary = await analyticsService.getSummary(workspaceId)
+      setData(summary)
+      setLastUpdated(new Date())
     } catch (err) {
       console.error(err)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
     }
+  }, [workspaceId])
+
+  const handlePortal = async () => {
+    try {
+      const res = await billingService.createPortal(workspaceId)
+      window.open(res.url, "_blank")
+    } catch {}
   }
 
-  useEffect(() => { load() }, [workspaceId])
+  useEffect(() => { load() }, [load])
 
-  if (isLoading) return <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#888888] animate-spin" /></div>
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <Loader2 className="w-6 h-6 text-[#888888] animate-spin" />
+        <p className="text-[12px] text-[#8A8D96] font-medium">Loading workspace data...</p>
+      </div>
+    )
+  }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-6 max-w-[1400px] w-full mx-auto select-none">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6 max-w-[1400px] w-full mx-auto select-none"
+    >
+      {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <button onClick={() => router.push("/home")} className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-2 cursor-pointer">
+          <button
+            onClick={() => router.push("/home")}
+            className="flex items-center gap-1.5 text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] transition-colors mb-2 cursor-pointer"
+          >
             <ArrowLeft className="w-3 h-3" /> All Workspaces
           </button>
-          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">Account Control Panel</span>
-          <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] mt-1">Workspace Home</h1>
+          <span className="text-[10px] text-[#8A8D96] font-medium uppercase tracking-wider">
+            Account Control Panel
+          </span>
+          <h1 className="text-2xl font-bold tracking-tight text-[#FFFFFF] mt-1">
+            Workspace Overview
+          </h1>
         </div>
-        <button onClick={() => load(true)} className="flex items-center gap-2 px-3.5 py-2 enterprise-btn text-xs font-semibold cursor-pointer">
-          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#8A8D96]" : ""}`} /> Sync Data
-        </button>
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <span className="text-[11px] text-[#8A8D96]">
+              Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+          <button
+            onClick={() => load(true)}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3.5 py-2 enterprise-btn text-xs font-semibold cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#8A8D96]" : ""}`} />
+            Sync Data
+          </button>
+        </div>
       </div>
 
+      {/* ── Row 1: Quick Actions + Plan ── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2"><QuickActions workspaceId={workspaceId} /></div>
-        <PlanCard subscription={data?.subscription ?? null} workspaceId={workspaceId} />
+        <div className="xl:col-span-2">
+          <QuickActions workspaceId={workspaceId} />
+        </div>
+        <PlanCard subscription={data?.subscription ?? null} workspaceId={workspaceId} onPortal={handlePortal} />
       </div>
 
-      <UsageSection usage={data?.usage ?? null} contactsTotal={data?.contactsTotal ?? null} />
+      {/* ── Row 2: Usage Meters ── */}
+      <UsageSection usage={data?.usage ?? null} />
 
+      {/* ── Row 3: Delivery Stats (email performance KPIs) ── */}
+      {data && <DeliveryStatsSection delivery={data.campaigns.delivery} />}
+
+      {/* ── Row 4: Campaigns + Workflows + Domains ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <CampaignsSection campaigns={data?.campaigns ?? []} total={data?.campaignsTotal ?? 0} workspaceId={workspaceId} />
+        <CampaignsSection
+          campaigns={data?.campaigns.recent ?? []}
+          total={data?.campaigns.total ?? 0}
+          workspaceId={workspaceId}
+        />
         <div className="space-y-6">
-          <WorkflowsSection stats={data?.workflowStats ?? null} workspaceId={workspaceId} />
-          <DomainsSection verified={data?.domainsVerified ?? 0} pending={data?.domainsPending ?? 0} workspaceId={workspaceId} />
+          <WorkflowsSection
+            stats={data ? { total: data.workflows.total, published: data.workflows.published, executions: data.workflows.executions } : null}
+            workspaceId={workspaceId}
+          />
+          <DomainsSection
+            verified={data?.domains.verified ?? 0}
+            pending={data?.domains.pending ?? 0}
+            failed={data?.domains.failed ?? 0}
+            workspaceId={workspaceId}
+          />
         </div>
       </div>
 
+      {/* ── Row 5: Contacts + Segments + Members ── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2"><ContactsSection workspaceId={workspaceId} /></div>
-        <SegmentsSection segments={data?.segments ?? []} total={data?.segmentsTotal ?? 0} workspaceId={workspaceId} />
+        <div className="xl:col-span-2">
+          <ContactsSection contacts={data?.contacts ?? null} workspaceId={workspaceId} />
+        </div>
+        <div className="space-y-6">
+          <SegmentsSection
+            segments={data?.segments.top ?? []}
+            total={data?.segments.total ?? 0}
+            workspaceId={workspaceId}
+          />
+          <MembersSection
+            total={data?.members.total ?? 0}
+            pendingInvites={data?.members.pendingInvites ?? 0}
+            workspaceId={workspaceId}
+          />
+        </div>
       </div>
     </motion.div>
   )
