@@ -8,6 +8,7 @@ import {
   Clock, Terminal, RefreshCw,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { apiKeysService, type ApiKey } from "@/lib/api-keys-service"
 import { workspaceService, type Workspace } from "@/lib/workspace-service"
 import { useRouter } from "next/navigation"
@@ -297,6 +298,7 @@ export default function ApiKeysView({ workspaceId }: Props) {
 
   const [showCreate, setShowCreate] = useState(false)
   const [newKey, setNewKey] = useState<{ apiKey: ApiKey; plaintext: string } | null>(null)
+  useShortcut("n", () => setShowCreate(true))
   const [revoking, setRevoking] = useState<ApiKey | null>(null)
   const [isRevoking, setIsRevoking] = useState(false)
 

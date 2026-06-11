@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { Plus, ArrowLeft, ChevronDown, Loader2 } from "lucide-react"
 import DomainsTable from "./domains-table"
 import AddDomainModal from "./add-domain-modal"
@@ -17,6 +18,7 @@ export default function DomainsView({ workspaceId }: Props) {
   const { domains, total, filters, loading, updateFilters, add, remove, refetch } = useDomains(workspaceId)
 
   const [addOpen, setAddOpen] = useState(false)
+  useShortcut("n", () => setAddOpen(true))
 
   const handleReverify = async (d: ApiDomain) => {
     try {

@@ -7,6 +7,7 @@ import Header from "@/components/dashboard/header"
 import NavigationProgress from "@/components/dashboard/navigation-progress"
 import { useAuth } from "@/lib/auth-context"
 import { useWorkspace } from "@/lib/workspace-context"
+import { KeyboardShortcutsProvider } from "@/lib/keyboard-shortcuts"
 
 export default function DashboardLayout({
   children,
@@ -39,15 +40,17 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex w-screen h-screen overflow-hidden bg-[#0D0E12] text-[#FFFFFF] p-3 gap-6">
-      <Suspense fallback={null}><NavigationProgress /></Suspense>
-      <Sidebar />
-      <div className="flex flex-col flex-1 h-full min-w-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto bg-transparent pt-0 pr-3">
-          {children}
-        </main>
+    <KeyboardShortcutsProvider>
+      <div className="flex w-screen h-screen overflow-hidden bg-[#0D0E12] text-[#FFFFFF] p-3 gap-6">
+        <Suspense fallback={null}><NavigationProgress /></Suspense>
+        <Sidebar />
+        <div className="flex flex-col flex-1 h-full min-w-0">
+          <Header />
+          <main className="flex-1 overflow-y-auto bg-transparent pt-0 pr-3">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </KeyboardShortcutsProvider>
   )
 }

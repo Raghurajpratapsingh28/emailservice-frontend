@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import { motion } from "framer-motion"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { Plus, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -31,6 +32,7 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [drawerMode, setDrawerMode] = useState<"view" | "create" | "edit">("view")
+  useShortcut("n", () => { setDrawerMode("create"); setSelectedContact(null); setIsDrawerOpen(true) })
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [isImportOpen, setIsImportOpen] = useState(false)
 

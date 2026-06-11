@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { Plus, ArrowLeft, Loader2 } from "lucide-react"
 import { campaignsService } from "@/lib/campaigns-service"
 import { toast } from "sonner"
@@ -17,6 +18,7 @@ interface Props { workspaceId?: string }
 export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
   const router = useRouter()
   const workspaceId = propWorkspaceId ?? ""
+  useShortcut("n", () => router.push(`/campaigns/${workspaceId}/create`), !!workspaceId)
 
   const { campaigns, total, filters, loading, error, updateFilters, patch, remove, refetch } = useCampaigns(workspaceId || null)
 

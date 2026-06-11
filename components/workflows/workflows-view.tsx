@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { Plus, ArrowLeft, Loader2 } from "lucide-react"
 import WorkflowsTable from "./workflows-table"
 import { useWorkflows } from "@/lib/redux/useCache"
@@ -13,6 +14,7 @@ interface Props {
 export default function WorkflowsView({ workspaceId }: Props) {
   const router = useRouter()
   const { workflows, total, loading, handlePublish, handlePause, handleResume, handleDelete } = useWorkflows(workspaceId)
+  useShortcut("n", () => router.push(`/flow-builder/${workspaceId}/create`))
 
   const COUNTS = {
     published: workflows.filter((w) => w.status === "published").length,

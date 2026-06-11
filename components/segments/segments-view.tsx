@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import type { Segment } from "@/lib/segments-data"
+import { useShortcut } from "@/lib/keyboard-shortcuts"
 import { segmentsService } from "@/lib/segments-service"
 import { useAuth } from "@/lib/auth-context"
 import { Plus, Loader2, ArrowLeft } from "lucide-react"
@@ -43,6 +44,7 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
   } = useSegments(workspaceId || null)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
+  useShortcut("n", () => { setEditingSegment(null); setIsModalOpen(true) })
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null)
 
   const handleEdit = (s: Segment) => {
