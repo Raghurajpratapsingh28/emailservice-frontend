@@ -1,17 +1,20 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useMemo } from "react"
 import { motion } from "framer-motion"
 import { Plus, Upload, ArrowLeft, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import ContactFilters from "./contact-filters"
 import ContactTable from "./contact-table"
 import ContactDrawer from "./contact-drawer"
 import BulkImport from "./bulk-import"
 import { contactsService } from "@/lib/contacts-service"
+import type { Contact as ApiContact } from "@/lib/contacts-service"
 import type { Contact } from "@/lib/contacts-data"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
+import { useContacts } from "@/lib/redux/useCache"
 
 interface Props {
   workspaceId?: string
@@ -20,59 +23,16 @@ interface Props {
 export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
   const { user } = useAuth()
   const router = useRouter()
-  const [workspaceId, setWorkspaceId] = useState<string>("")
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [lifecycleStage, setLifecycleStage] = useState("all")
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [showSuppressed, setShowSuppressed] = useState(false)
-  const [showUnsubscribed, setShowUnsubscribed] = useState(false)
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo] = useState("")
+  const workspaceId = propWorkspaceId ?? user?.workspaces?.[0]?.id ?? ""
+
+  const { contacts: apiContacts, total, filters, loading, updateFilters, patch, remove, refetch } = useContacts(workspaceId || null)
+  const contacts = apiContacts as unknown as Contact[]
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [drawerMode, setDrawerMode] = useState<"view" | "create" | "edit">("view")
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [isImportOpen, setIsImportOpen] = useState(false)
-
-  const loadContacts = useCallback(async (wsId: string) => {
-    setIsLoading(true)
-    try {
-      const res = await contactsService.getContacts(wsId, {
-        page,
-        pageSize: 50,
-        search: searchQuery || undefined,
-        lifecycleStage: lifecycleStage !== "all" ? lifecycleStage : undefined,
-        tags: selectedTags.length > 0 ? selectedTags.join(",") : undefined,
-        emailSuppressed: showSuppressed || undefined,
-        unsubscribed: showUnsubscribed || undefined,
-        fromDate: dateFrom || undefined,
-        toDate: dateTo || undefined,
-      })
-      setContacts(res.items as unknown as Contact[])
-      setTotal(res.total)
-    } catch (error) {
-      console.error("Failed to load contacts:", error)
-      setContacts([])
-    } finally {
-      setIsLoading(false)
-    }
-  }, [page, searchQuery, lifecycleStage, selectedTags, showSuppressed, showUnsubscribed, dateFrom, dateTo])
-
-  useEffect(() => {
-    if (propWorkspaceId) {
-      setWorkspaceId(propWorkspaceId)
-      loadContacts(propWorkspaceId)
-    } else if (user?.workspaces?.[0]) {
-      const wsId = user.workspaces[0].id
-      setWorkspaceId(wsId)
-      loadContacts(wsId)
-    }
-  }, [user, propWorkspaceId, loadContacts])
 
   const availableTags = useMemo(() => {
     const tagsSet = new Set<string>()
@@ -81,7 +41,10 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
   }, [contacts])
 
   const handleToggleTag = (tag: string) => {
-    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])
+    const next = filters.tags.includes(tag)
+      ? filters.tags.filter(t => t !== tag)
+      : [...filters.tags, tag]
+    updateFilters({ tags: next })
   }
 
   const handleOpenDrawer = (mode: "view" | "create" | "edit", contact: Contact | null) => {
@@ -93,12 +56,13 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
   const handleSaveContact = async (formData: Partial<Contact>) => {
     try {
       if (drawerMode === "create") {
-        await contactsService.createContact(workspaceId, formData)
+        await contactsService.createContact(workspaceId, formData as Partial<ApiContact>)
       } else if (drawerMode === "edit" && selectedContact) {
-        await contactsService.updateContact(workspaceId, selectedContact.id, formData)
+        const res = await contactsService.updateContact(workspaceId, selectedContact.id, formData as Partial<ApiContact>)
+        patch({ ...res.contact, id: selectedContact.id })
       }
       setIsDrawerOpen(false)
-      loadContacts(workspaceId)
+      refetch()
     } catch (error) {
       console.error("Failed to save contact:", error)
     }
@@ -108,7 +72,7 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
     if (!confirm("Delete this contact?")) return
     try {
       await contactsService.deleteContact(workspaceId, contactId)
-      loadContacts(workspaceId)
+      remove(contactId)
     } catch (error) {
       console.error("Failed to delete contact:", error)
     }
@@ -119,13 +83,13 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
       description: `${imported} contact${imported !== 1 ? "s" : ""} imported, ${skipped} duplicate${skipped !== 1 ? "s" : ""} skipped.`,
     })
     setIsImportOpen(false)
-    loadContacts(workspaceId)
+    refetch()
   }
 
   const handleSuppress = async (contactId: string) => {
     try {
-      await contactsService.suppressContact(workspaceId, contactId)
-      loadContacts(workspaceId)
+      const res = await contactsService.suppressContact(workspaceId, contactId)
+      patch({ ...res.contact, id: contactId } as ApiContact & { id: string })
     } catch (error) {
       console.error("Failed to suppress contact:", error)
     }
@@ -174,24 +138,24 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
       </div>
 
       <ContactFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        lifecycleStage={lifecycleStage}
-        setLifecycleStage={setLifecycleStage}
-        selectedTags={selectedTags}
+        searchQuery={filters.search}
+        setSearchQuery={(v) => updateFilters({ search: v })}
+        lifecycleStage={filters.lifecycleStage}
+        setLifecycleStage={(v) => updateFilters({ lifecycleStage: v })}
+        selectedTags={filters.tags}
         availableTags={availableTags}
         toggleTag={handleToggleTag}
-        showSuppressed={showSuppressed}
-        setShowSuppressed={setShowSuppressed}
-        showUnsubscribed={showUnsubscribed}
-        setShowUnsubscribed={setShowUnsubscribed}
-        dateFrom={dateFrom}
-        setDateFrom={setDateFrom}
-        dateTo={dateTo}
-        setDateTo={setDateTo}
+        showSuppressed={filters.showSuppressed}
+        setShowSuppressed={(v) => updateFilters({ showSuppressed: v })}
+        showUnsubscribed={filters.showUnsubscribed}
+        setShowUnsubscribed={(v) => updateFilters({ showUnsubscribed: v })}
+        dateFrom={filters.dateFrom}
+        setDateFrom={(v) => updateFilters({ dateFrom: v })}
+        dateTo={filters.dateTo}
+        setDateTo={(v) => updateFilters({ dateTo: v })}
       />
 
-      {isLoading ? (
+      {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" />
         </div>
@@ -205,20 +169,20 @@ export default function ContactsView({ workspaceId: propWorkspaceId }: Props) {
         />
       )}
 
-      {!isLoading && total > 0 && (
+      {!loading && total > 0 && (
         <div className="flex items-center justify-between text-[11px] font-medium text-[#8A8D96] px-1">
           <span>Showing {contacts.length} of {total} contacts</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
+              onClick={() => updateFilters({ page: Math.max(1, filters.page - 1) })}
+              disabled={filters.page === 1}
               className="px-2.5 py-1 bg-transparent text-[#FFFFFF] border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] transition-all cursor-pointer disabled:cursor-not-allowed"
             >
               Prev
             </button>
-            <span className="text-[#FFFFFF]">Page {page}</span>
+            <span className="text-[#FFFFFF]">Page {filters.page}</span>
             <button
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => updateFilters({ page: filters.page + 1 })}
               disabled={contacts.length < 50}
               className="px-2.5 py-1 bg-transparent text-[#FFFFFF] border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] transition-all cursor-pointer disabled:cursor-not-allowed"
             >

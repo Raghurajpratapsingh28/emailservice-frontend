@@ -1,94 +1,27 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Plus, ArrowLeft, Loader2 } from "lucide-react"
 import WorkflowsTable from "./workflows-table"
-import WorkflowStatusBadge from "./workflow-status-badge"
-import { workflowsService, type ApiWorkflow } from "@/lib/workflows-service"
-import { graphToNodes, type Workflow } from "@/lib/workflows-data"
+import { useWorkflows } from "@/lib/redux/useCache"
 
 interface Props {
   workspaceId: string
 }
 
-function apiToWorkflow(w: ApiWorkflow): Workflow {
-  return {
-    id: w.id,
-    name: w.name,
-    status: w.status,
-    nodes: w.graph ? graphToNodes(w.graph) : [],
-    executionStats: w.executionStats ?? { total: 0, completed: 0, failed: 0, running: 0 },
-    publishedAt: w.publishedAt,
-    createdAt: w.createdAt,
-    updatedAt: w.updatedAt,
-  }
-}
-
 export default function WorkflowsView({ workspaceId }: Props) {
   const router = useRouter()
-  const [workflows, setWorkflows] = useState<Workflow[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const load = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const res = await workflowsService.list(workspaceId, { pageSize: 100 })
-      setWorkflows(res.items.map(apiToWorkflow))
-      setTotal(res.total)
-    } catch (err) {
-      console.error("Failed to load workflows:", err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [workspaceId])
-
-  useEffect(() => { load() }, [load])
-
-  const handlePublish = async (w: Workflow) => {
-    try {
-      await workflowsService.publish(workspaceId, w.id)
-      load()
-    } catch (err) {
-      console.error("Failed to publish:", err)
-    }
-  }
-
-  const handlePause = async (w: Workflow) => {
-    try {
-      await workflowsService.pause(workspaceId, w.id)
-      load()
-    } catch (err) {
-      console.error("Failed to pause:", err)
-    }
-  }
-
-  const handleResume = async (w: Workflow) => {
-    try {
-      await workflowsService.resume(workspaceId, w.id)
-      load()
-    } catch (err) {
-      console.error("Failed to resume:", err)
-    }
-  }
-
-  const handleDelete = async (w: Workflow) => {
-    if (!window.confirm(`Archive "${w.name}"?`)) return
-    try {
-      await workflowsService.delete(workspaceId, w.id)
-      load()
-    } catch (err) {
-      console.error("Failed to delete:", err)
-    }
-  }
+  const { workflows, total, loading, handlePublish, handlePause, handleResume, handleDelete } = useWorkflows(workspaceId)
 
   const COUNTS = {
     published: workflows.filter((w) => w.status === "published").length,
     draft: workflows.filter((w) => w.status === "draft").length,
     paused: workflows.filter((w) => w.status === "paused").length,
   }
+
+  const active = workflows.filter((w) => w.status !== "archived")
+  const archived = workflows.filter((w) => w.status === "archived")
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
@@ -128,12 +61,12 @@ export default function WorkflowsView({ workspaceId }: Props) {
         ))}
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#6B7280] animate-spin" /></div>
       ) : (
         <>
           <WorkflowsTable
-            workflows={workflows.filter((w) => w.status !== "archived")}
+            workflows={active}
             onView={(w) => router.push(`/flow-builder/${workspaceId}/details/${w.id}`)}
             onEdit={(w) => router.push(`/flow-builder/${workspaceId}/create?edit=${w.id}`)}
             onPublish={handlePublish}
@@ -142,14 +75,14 @@ export default function WorkflowsView({ workspaceId }: Props) {
             onDelete={handleDelete}
           />
 
-          {workflows.some((w) => w.status === "archived") && (
+          {archived.length > 0 && (
             <details className="group">
               <summary className="text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer transition-colors">
-                {workflows.filter((w) => w.status === "archived").length} archived workflow(s)
+                {archived.length} archived workflow(s)
               </summary>
               <div className="mt-3">
                 <WorkflowsTable
-                  workflows={workflows.filter((w) => w.status === "archived")}
+                  workflows={archived}
                   onView={(w) => router.push(`/flow-builder/${workspaceId}/details/${w.id}`)}
                   onEdit={(w) => router.push(`/flow-builder/${workspaceId}/create?edit=${w.id}`)}
                   onPublish={handlePublish}

@@ -1,141 +1,50 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Plus, Search, ChevronDown, ArrowLeft, Loader2 } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import SendsTable from "./sends-table"
 import TemplatesTable from "./templates-table"
 import { SendStatusBadge, TemplateStatusBadge } from "./status-badges"
-import { transactionalService, type EmailSend, type EmailTemplate } from "@/lib/transactional-service"
-import type { TransactionalSend, EmailTemplate as LocalEmailTemplate } from "@/lib/transactional-data"
-import { initialTemplates } from "@/lib/transactional-data"
+import { useTransactional } from "@/lib/redux/useCache"
 
 type Tab = "sends" | "templates"
 
 interface Props { workspaceId?: string }
 
-function mapSend(s: EmailSend): TransactionalSend {
-  return {
-    id: s.sendId, recipient: s.recipientEmail, recipientName: s.recipientEmail.split("@")[0],
-    subject: s.subject, fromEmail: s.senderEmail, fromName: "", replyTo: "",
-    status: s.status, tags: s.tags, providerMessageId: s.providerMessageId,
-    failureReason: s.failureReason, idempotencyKey: null, sentAt: null,
-    createdAt: s.createdAt, updatedAt: s.updatedAt,
-  }
-}
-
-function mapTemplate(t: EmailTemplate): LocalEmailTemplate {
-  return {
-    id: t.id, name: t.name, subject: t.subject, htmlBody: t.htmlBody, plainText: t.textBody,
-    variables: Object.entries(t.variables || {}).map(([name]) => ({ name, type: "string" as const })),
-    status: t.status, version: t.version, createdAt: t.createdAt, updatedAt: t.updatedAt,
-  }
-}
-
 export default function TransactionalView({ workspaceId: propWorkspaceId }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const workspaceId = propWorkspaceId ?? ""
+
   const [tab, setTab] = useState<Tab>((searchParams.get("tab") as Tab) ?? "sends")
 
-  const [sends, setSends] = useState<TransactionalSend[]>([])
-  const [sendsTotal, setSendsTotal] = useState(0)
-  const [sendsLoading, setSendsLoading] = useState(true)
-  const [recipientFilter, setRecipientFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo] = useState("")
-
-  const [templates, setTemplates] = useState<LocalEmailTemplate[]>([])
-  const [templatesTotal, setTemplatesTotal] = useState(0)
-  const [templatesLoading, setTemplatesLoading] = useState(true)
-  const [tplSearch, setTplSearch] = useState("")
-  const [tplStatus, setTplStatus] = useState("all")
-  const [latestOnly, setLatestOnly] = useState(true)
-
-  const loadSends = useCallback(async () => {
-    if (!workspaceId) return
-    setSendsLoading(true)
-    try {
-      const res = await transactionalService.getSends(workspaceId, {
-        status: statusFilter !== "all" ? statusFilter : undefined,
-        recipient: recipientFilter || undefined,
-        fromDate: dateFrom || undefined,
-        toDate: dateTo || undefined,
-        pageSize: 100,
-      })
-      setSends(res.items.map(mapSend))
-      setSendsTotal(res.total)
-    } catch (err) { console.error(err) }
-    finally { setSendsLoading(false) }
-  }, [workspaceId, statusFilter, recipientFilter, dateFrom, dateTo])
-
-  const loadTemplates = useCallback(async () => {
-    if (!workspaceId) { setTemplates(initialTemplates); setTemplatesTotal(initialTemplates.length); setTemplatesLoading(false); return }
-    setTemplatesLoading(true)
-    try {
-      const res = await transactionalService.getTemplates(workspaceId, {
-        status: tplStatus !== "all" ? tplStatus : undefined,
-        search: tplSearch || undefined,
-        latestOnly,
-        pageSize: 100,
-      })
-      const mapped = res.items.map(mapTemplate)
-      if (mapped.length === 0) {
-        setTemplates(initialTemplates)
-        setTemplatesTotal(initialTemplates.length)
-      } else {
-        setTemplates(mapped)
-        setTemplatesTotal(res.total)
-      }
-    } catch {
-      setTemplates(initialTemplates)
-      setTemplatesTotal(initialTemplates.length)
-    }
-    finally { setTemplatesLoading(false) }
-  }, [workspaceId, tplStatus, tplSearch, latestOnly])
-
-  useEffect(() => { loadSends() }, [loadSends])
-  useEffect(() => { loadTemplates() }, [loadTemplates])
-
-  // Auto-refresh every 5s while any send is queued or sending
-  useEffect(() => {
-    const hasPending = sends.some((s) => s.status === "queued" || s.status === "sending")
-    if (!hasPending) return
-    const id = setInterval(loadSends, 30000)
-    return () => clearInterval(id)
-  }, [sends, loadSends])
+  const {
+    sends, sendsTotal, sendsFilters, sendsLoading,
+    templates, templatesTotal, templatesFilters, templatesLoading,
+    updateSendsFilters, updateTemplatesFilters,
+    handlePublishTemplate, handleDeleteTemplate,
+  } = useTransactional(workspaceId || null)
 
   const filteredSends = useMemo(() => sends.filter((s) => {
-    if (recipientFilter && !s.recipient.toLowerCase().includes(recipientFilter.toLowerCase())) return false
-    if (statusFilter !== "all" && s.status !== statusFilter) return false
-    if (dateFrom && new Date(s.createdAt) < new Date(dateFrom)) return false
-    if (dateTo && new Date(s.createdAt) > new Date(dateTo)) return false
+    if (sendsFilters.recipient && !s.recipient.toLowerCase().includes(sendsFilters.recipient.toLowerCase())) return false
+    if (sendsFilters.status !== "all" && s.status !== sendsFilters.status) return false
+    if (sendsFilters.dateFrom && new Date(s.createdAt) < new Date(sendsFilters.dateFrom)) return false
+    if (sendsFilters.dateTo && new Date(s.createdAt) > new Date(sendsFilters.dateTo)) return false
     return true
-  }), [sends, recipientFilter, statusFilter, dateFrom, dateTo])
+  }), [sends, sendsFilters])
 
   const filteredTemplates = useMemo(() => {
     let list = templates
-    if (tplSearch) list = list.filter((t) => t.name.toLowerCase().includes(tplSearch.toLowerCase()))
-    if (tplStatus !== "all") list = list.filter((t) => t.status === tplStatus)
-    if (latestOnly) {
+    if (templatesFilters.search) list = list.filter((t) => t.name.toLowerCase().includes(templatesFilters.search.toLowerCase()))
+    if (templatesFilters.status !== "all") list = list.filter((t) => t.status === templatesFilters.status)
+    if (templatesFilters.latestOnly) {
       const seen = new Set<string>()
       list = list.filter((t) => { if (seen.has(t.name)) return false; seen.add(t.name); return true })
     }
     return list
-  }, [templates, tplSearch, tplStatus, latestOnly])
-
-  const handlePublishTemplate = async (t: LocalEmailTemplate) => {
-    try { await transactionalService.updateTemplate(workspaceId, t.id, { publish: true }); loadTemplates() }
-    catch (err) { console.error(err) }
-  }
-
-  const handleDeleteTemplate = async (t: LocalEmailTemplate) => {
-    if (!window.confirm(`Archive template "${t.name}"?`)) return
-    try { await transactionalService.deleteTemplate(workspaceId, t.id); loadTemplates() }
-    catch (err) { console.error(err) }
-  }
+  }, [templates, templatesFilters])
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1200px] mx-auto select-none">
@@ -173,17 +82,27 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
           <div className="enterprise-card p-4 flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A8D96]" />
-              <input value={recipientFilter} onChange={(e) => setRecipientFilter(e.target.value)} placeholder="Search by recipient..." className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors" />
+              <input
+                value={sendsFilters.recipient}
+                onChange={(e) => updateSendsFilters({ recipient: e.target.value })}
+                placeholder="Search by recipient..."
+                className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors"
+              />
             </div>
-            <Sel value={statusFilter} onChange={setStatusFilter}>
+            <Sel value={sendsFilters.status} onChange={(v) => updateSendsFilters({ status: v })}>
               <option value="all">All Statuses</option>
               {["queued", "sending", "sent", "failed", "bounced"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </Sel>
-            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className={dateCls} />
+            <input type="date" value={sendsFilters.dateFrom} onChange={(e) => updateSendsFilters({ dateFrom: e.target.value })} className={dateCls} />
             <span className="text-[10px] text-[#8A8D96] font-medium">to</span>
-            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className={dateCls} />
-            {(recipientFilter || statusFilter !== "all" || dateFrom || dateTo) && (
-              <button onClick={() => { setRecipientFilter(""); setStatusFilter("all"); setDateFrom(""); setDateTo("") }} className="text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer">Clear</button>
+            <input type="date" value={sendsFilters.dateTo} onChange={(e) => updateSendsFilters({ dateTo: e.target.value })} className={dateCls} />
+            {(sendsFilters.recipient || sendsFilters.status !== "all" || sendsFilters.dateFrom || sendsFilters.dateTo) && (
+              <button
+                onClick={() => updateSendsFilters({ recipient: '', status: 'all', dateFrom: '', dateTo: '' })}
+                className="text-[10px] font-medium text-[#8A8D96] hover:text-[#FFFFFF] cursor-pointer"
+              >
+                Clear
+              </button>
             )}
           </div>
 
@@ -212,14 +131,19 @@ export default function TransactionalView({ workspaceId: propWorkspaceId }: Prop
           <div className="enterprise-card p-4 flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A8D96]" />
-              <input value={tplSearch} onChange={(e) => setTplSearch(e.target.value)} placeholder="Search templates..." className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors" />
+              <input
+                value={templatesFilters.search}
+                onChange={(e) => updateTemplatesFilters({ search: e.target.value })}
+                placeholder="Search templates..."
+                className="w-full pl-9 pr-3 py-2 bg-[#0D0E12] border border-[#202126] hover:border-[#8A8D96] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] placeholder-[#8A8D96] focus:outline-none transition-colors"
+              />
             </div>
-            <Sel value={tplStatus} onChange={setTplStatus}>
+            <Sel value={templatesFilters.status} onChange={(v) => updateTemplatesFilters({ status: v })}>
               <option value="all">All Statuses</option>
               {["draft", "published", "archived"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </Sel>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={latestOnly} onChange={(e) => setLatestOnly(e.target.checked)} className="w-3.5 h-3.5 accent-[#696CFF]" />
+              <input type="checkbox" checked={templatesFilters.latestOnly} onChange={(e) => updateTemplatesFilters({ latestOnly: e.target.checked })} className="w-3.5 h-3.5 accent-[#696CFF]" />
               <span className="text-[10px] font-medium text-[#8A8D96]">Latest only</span>
             </label>
           </div>

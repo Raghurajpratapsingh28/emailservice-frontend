@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { Segment } from "@/lib/segments-data"
+import type { Segment } from "@/lib/segments-data"
 import { segmentsService } from "@/lib/segments-service"
 import { useAuth } from "@/lib/auth-context"
 import { Plus, Loader2, ArrowLeft } from "lucide-react"
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import SegmentsTable from "./segments-table"
 import SegmentFormModal from "./segment-form-modal"
 import SegmentDetailView from "./segment-detail-view"
+import { useSegments } from "@/lib/redux/useCache"
 
 interface Props {
   workspaceId?: string
@@ -19,59 +20,30 @@ interface Props {
 export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
   const { user } = useAuth()
   const router = useRouter()
-  const [workspaceId, setWorkspaceId] = useState<string>("")
-  const [segments, setSegments] = useState<Segment[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  const [view, setView] = useState<"list" | "detail">("list")
-  const [selectedSegment, setSelectedSegment] = useState<Segment | null>(null)
-  const [previewContacts, setPreviewContacts] = useState<Array<{ id: string; email: string; firstName: string; lastName: string; lifecycleStage: string }>>([])
+  const workspaceId = propWorkspaceId ?? user?.workspaces?.[0]?.id ?? ""
+
+  const {
+    segments,
+    filtered,
+    total,
+    filterType,
+    selectedSegment,
+    previewContacts,
+    loading,
+    error,
+    selectSegment,
+    patch,
+    add,
+    remove,
+    clearSelected,
+    changeFilterType,
+    changePreviewContacts,
+    refetch,
+  } = useSegments(workspaceId || null)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSegment, setEditingSegment] = useState<Segment | null>(null)
-  const [filterType, setFilterType] = useState<"all" | "static" | "dynamic">("all")
-
-  const filtered = segments.filter((s) => filterType === "all" || s.type === filterType)
-
-  const loadSegments = useCallback(async (wsId: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await segmentsService.listSegments(wsId, { pageSize: 100 })
-      setSegments(res.items)
-      setTotal(res.total)
-    } catch (err: any) {
-      setError(err.message || "Failed to load segments")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (propWorkspaceId) {
-      setWorkspaceId(propWorkspaceId)
-      loadSegments(propWorkspaceId)
-    } else if (user?.workspaces?.[0]) {
-      const wsId = user.workspaces[0].id
-      setWorkspaceId(wsId)
-      loadSegments(wsId)
-    }
-  }, [user, propWorkspaceId, loadSegments])
-
-  const handleView = async (s: Segment) => {
-    setSelectedSegment(s)
-    setView("detail")
-    setPreviewContacts([])
-    if (s.status === "ready") {
-      try {
-        const res = await segmentsService.previewSegment(workspaceId, s.id)
-        setPreviewContacts(res.contacts)
-      } catch {
-        // preview is best-effort
-      }
-    }
-  }
 
   const handleEdit = (s: Segment) => {
     setEditingSegment(s)
@@ -79,18 +51,11 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
   }
 
   const handleRefresh = async (s: Segment) => {
-    setSegments((prev) =>
-      prev.map((seg) => seg.id === s.id ? { ...seg, status: "computing" as const } : seg)
-    )
-    if (selectedSegment?.id === s.id) {
-      setSelectedSegment((prev) => prev ? { ...prev, status: "computing" as const } : prev)
-    }
+    patch({ id: s.id, status: "computing" })
     try {
       await segmentsService.refreshSegment(workspaceId, s.id)
     } catch {
-      setSegments((prev) =>
-        prev.map((seg) => seg.id === s.id ? { ...seg, status: s.status } : seg)
-      )
+      patch({ id: s.id, status: s.status })
     }
   }
 
@@ -98,9 +63,8 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
     if (!window.confirm(`Delete segment "${s.name}"? This action cannot be undone.`)) return
     try {
       await segmentsService.deleteSegment(workspaceId, s.id)
-      setSegments((prev) => prev.filter((seg) => seg.id !== s.id))
-      setTotal((t) => t - 1)
-      if (view === "detail") setView("list")
+      remove(s.id)
+      if (selectedSegment?.id === s.id) clearSelected()
     } catch (err: any) {
       toast.error(err.message || "Failed to delete segment")
     }
@@ -113,24 +77,23 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
           name: data.name,
           filterTree: data.filterTree,
         })
-        setSegments((prev) => prev.map((s) => s.id === editingSegment.id ? updated : s))
-        if (selectedSegment?.id === editingSegment.id) setSelectedSegment(updated)
+        patch({ ...updated, id: editingSegment.id })
       } else {
         const created = await segmentsService.createSegment(workspaceId, {
           name: data.name ?? "Untitled",
           type: data.type ?? "dynamic",
           filterTree: data.filterTree,
         })
-        setSegments((prev) => [created, ...prev])
-        setTotal((t) => t + 1)
+        add(created)
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to save segment")
     }
     setEditingSegment(null)
+    setIsModalOpen(false)
   }
 
-  if (view === "detail" && selectedSegment) {
+  if (selectedSegment) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 15 }}
@@ -142,15 +105,11 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
           segment={selectedSegment}
           contacts={previewContacts}
           workspaceId={workspaceId}
-          onBack={() => setView("list")}
+          onBack={clearSelected}
           onEdit={handleEdit}
           onRefresh={handleRefresh}
           onDelete={handleDelete}
-          onContactsChanged={(updatedContacts, delta) => {
-            setPreviewContacts(updatedContacts)
-            setSelectedSegment((prev) => prev ? { ...prev, contactCount: prev.contactCount + delta } : prev)
-            setSegments((prev) => prev.map((s) => s.id === selectedSegment.id ? { ...s, contactCount: s.contactCount + delta } : s))
-          }}
+          onContactsChanged={(updatedContacts, delta) => changePreviewContacts(updatedContacts, delta)}
         />
         <SegmentFormModal
           isOpen={isModalOpen}
@@ -169,7 +128,6 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="space-y-6 max-w-[1500px] mx-auto select-none"
     >
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {propWorkspaceId && (
@@ -195,11 +153,9 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
             {(["all", "dynamic", "static"] as const).map((t) => (
               <button
                 key={t}
-                onClick={() => setFilterType(t)}
+                onClick={() => changeFilterType(t)}
                 className={`px-3 py-1.5 text-[10px] font-medium rounded-lg transition-all duration-200 capitalize cursor-pointer ${
-                  filterType === t
-                    ? "bg-[#25262B] text-[#FFFFFF]"
-                    : "text-[#8A8D96] hover:text-[#FFFFFF]"
+                  filterType === t ? "bg-[#25262B] text-[#FFFFFF]" : "text-[#8A8D96] hover:text-[#FFFFFF]"
                 }`}
               >
                 {t}
@@ -217,7 +173,6 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
         </div>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total", value: segments.length, color: "text-[#FFFFFF]" },
@@ -232,32 +187,28 @@ export default function SegmentsView({ workspaceId: propWorkspaceId }: Props) {
         ))}
       </div>
 
-      {/* Loading / Error / Table */}
-      {isLoading ? (
+      {loading ? (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" />
         </div>
       ) : error ? (
         <div className="p-8 enterprise-card border-red-500/30 text-center">
           <p className="text-sm text-red-400">{error}</p>
-          <button
-            onClick={() => loadSegments(workspaceId)}
-            className="mt-3 text-xs text-[#8A8D96] underline hover:text-white cursor-pointer"
-          >
+          <button onClick={() => refetch()} className="mt-3 text-xs text-[#8A8D96] underline hover:text-white cursor-pointer">
             Retry
           </button>
         </div>
       ) : (
         <SegmentsTable
           segments={filtered}
-          onView={handleView}
+          onView={selectSegment}
           onEdit={handleEdit}
           onRefresh={handleRefresh}
           onDelete={handleDelete}
         />
       )}
 
-      {!isLoading && !error && filtered.length > 0 && (
+      {!loading && !error && filtered.length > 0 && (
         <div className="flex items-center justify-between text-[11px] font-medium text-[#8A8D96] px-1">
           <span>Showing {filtered.length} of {segments.length} segments</span>
           <span className="text-[#FFFFFF]">Page 1 of 1</span>

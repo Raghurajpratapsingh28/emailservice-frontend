@@ -8,6 +8,7 @@ interface WorkspaceState {
   members: WorkspaceMember[] | null;
   loading: boolean;
   error: string | null;
+  fetchedAt: number | null;
 }
 
 const initialState: WorkspaceState = {
@@ -17,6 +18,7 @@ const initialState: WorkspaceState = {
   members: null,
   loading: false,
   error: null,
+  fetchedAt: null,
 };
 
 export const fetchWorkspaces = createAsyncThunk('workspace/fetchWorkspaces', async () => {
@@ -60,6 +62,7 @@ const workspaceSlice = createSlice({
       .addCase(fetchWorkspaces.fulfilled, (state, action) => {
         state.loading = false;
         state.workspaces = action.payload;
+        state.fetchedAt = Date.now();
       })
       .addCase(fetchWorkspaces.rejected, (state, action) => {
         state.loading = false;

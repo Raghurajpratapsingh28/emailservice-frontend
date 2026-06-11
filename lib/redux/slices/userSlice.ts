@@ -5,12 +5,14 @@ interface UserState {
   profile: User | null;
   loading: boolean;
   error: string | null;
+  fetchedAt: number | null;
 }
 
 const initialState: UserState = {
   profile: null,
   loading: false,
   error: null,
+  fetchedAt: null,
 };
 
 export const fetchUserProfile = createAsyncThunk('user/fetchProfile', async () => {
@@ -38,6 +40,7 @@ const userSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.profile = action.payload;
+        state.fetchedAt = Date.now();
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.loading = false;

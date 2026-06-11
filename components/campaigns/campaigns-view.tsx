@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Plus, ArrowLeft, Loader2 } from "lucide-react"
 import { campaignsService } from "@/lib/campaigns-service"
 import { toast } from "sonner"
 import type { Campaign } from "@/lib/campaigns-data"
+import { useCampaigns } from "@/lib/redux/useCache"
 import CampaignsTable from "./campaigns-table"
 import CampaignFilters from "./campaign-filters"
 import SendNowDialog from "./send-now-dialog"
@@ -16,56 +17,55 @@ interface Props { workspaceId?: string }
 export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
   const router = useRouter()
   const workspaceId = propWorkspaceId ?? ""
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [search, setSearch] = useState("")
-  const [status, setStatus] = useState("all")
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo] = useState("")
-  const [page, setPage] = useState(1)
+
+  const { campaigns, total, filters, loading, error, updateFilters, patch, remove, refetch } = useCampaigns(workspaceId || null)
+
   const [sendDialogCampaign, setSendDialogCampaign] = useState<Campaign | null>(null)
 
-  const load = useCallback(async () => {
-    if (!workspaceId) return
-    setIsLoading(true); setError(null)
-    try {
-      const res = await campaignsService.list(workspaceId, {
-        page, pageSize: 50,
-        status: status !== "all" ? status : undefined,
-        search: search || undefined,
-        fromDate: dateFrom || undefined,
-        toDate: dateTo || undefined,
-      })
-      setCampaigns(res.items); setTotal(res.total)
-    } catch (err: any) { setError(err.message || "Failed to load campaigns") }
-    finally { setIsLoading(false) }
-  }, [workspaceId, page, status, search, dateFrom, dateTo])
-
-  useEffect(() => { load() }, [load])
-
-  const patch = (id: string, p: Partial<Campaign>) => setCampaigns((prev) => prev.map((c) => c.id === id ? { ...c, ...p } : c))
-
   const handlePause = async (c: Campaign) => {
-    patch(c.id, { status: "paused" })
-    try { patch(c.id, await campaignsService.pause(workspaceId, c.id)) } catch (e: any) { patch(c.id, { status: c.status }); toast.error(e.message) }
+    patch({ id: c.id, status: "paused" })
+    try {
+      const updated = await campaignsService.pause(workspaceId, c.id)
+      patch({ ...updated, id: c.id })
+    } catch (e: any) {
+      patch({ id: c.id, status: c.status })
+      toast.error(e.message)
+    }
   }
+
   const handleResume = async (c: Campaign) => {
-    try { patch(c.id, await campaignsService.resume(workspaceId, c.id)) } catch (e: any) { toast.error(e.message) }
+    try {
+      const updated = await campaignsService.resume(workspaceId, c.id)
+      patch({ ...updated, id: c.id })
+    } catch (e: any) {
+      toast.error(e.message)
+    }
   }
+
   const handleDelete = async (c: Campaign) => {
     if (!window.confirm(`Delete "${c.name}"?`)) return
-    try { await campaignsService.delete(workspaceId, c.id); load() } catch (e: any) { toast.error(e.message) }
+    try {
+      await campaignsService.delete(workspaceId, c.id)
+      remove(c.id)
+    } catch (e: any) {
+      toast.error(e.message)
+    }
   }
+
   const handleSendNow = (c: Campaign) => setSendDialogCampaign(c)
 
   const handleSendConfirm = async (c: Campaign) => {
-    try { await campaignsService.send(workspaceId, c.id); patch(c.id, { status: "sending" }) } catch (e: any) { toast.error(e.message) }
+    try {
+      await campaignsService.send(workspaceId, c.id)
+      patch({ id: c.id, status: "sending" })
+    } catch (e: any) {
+      toast.error(e.message)
+    }
   }
 
   const COUNTS = {
-    total, draft: campaigns.filter(c => c.status === "draft").length,
+    total,
+    draft: campaigns.filter(c => c.status === "draft").length,
     scheduled: campaigns.filter(c => c.status === "scheduled").length,
     sending: campaigns.filter(c => c.status === "sending").length,
     sent: campaigns.filter(c => c.status === "sent").length,
@@ -74,6 +74,7 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6 max-w-[1500px] mx-auto select-none">
       <SendNowDialog campaign={sendDialogCampaign} onClose={() => setSendDialogCampaign(null)} onConfirm={handleSendConfirm} />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {propWorkspaceId && (
@@ -109,14 +110,23 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
         ))}
       </div>
 
-      <CampaignFilters search={search} setSearch={setSearch} status={status} setStatus={setStatus} dateFrom={dateFrom} setDateFrom={setDateFrom} dateTo={dateTo} setDateTo={setDateTo} />
+      <CampaignFilters
+        search={filters.search}
+        setSearch={(v) => updateFilters({ search: v })}
+        status={filters.status}
+        setStatus={(v) => updateFilters({ status: v })}
+        dateFrom={filters.dateFrom}
+        setDateFrom={(v) => updateFilters({ dateFrom: v })}
+        dateTo={filters.dateTo}
+        setDateTo={(v) => updateFilters({ dateTo: v })}
+      />
 
-      {isLoading ? (
+      {loading ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="w-6 h-6 text-[#8A8D96] animate-spin" /></div>
       ) : error ? (
         <div className="p-8 enterprise-card border-red-500/30 text-center">
           <p className="text-sm text-red-400">{error}</p>
-          <button onClick={load} className="mt-3 text-xs text-[#8A8D96] underline hover:text-[#FFFFFF] cursor-pointer">Retry</button>
+          <button onClick={() => refetch()} className="mt-3 text-xs text-[#8A8D96] underline hover:text-[#FFFFFF] cursor-pointer">Retry</button>
         </div>
       ) : (
         <CampaignsTable
@@ -131,13 +141,13 @@ export default function CampaignsView({ workspaceId: propWorkspaceId }: Props) {
         />
       )}
 
-      {!isLoading && !error && total > 0 && (
+      {!loading && !error && total > 0 && (
         <div className="flex items-center justify-between text-[11px] font-medium text-[#8A8D96] px-1">
           <span>Showing {campaigns.length} of {total} campaigns</span>
           <div className="flex items-center gap-2">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Prev</button>
-            <span className="text-[#FFFFFF]">Page {page}</span>
-            <button onClick={() => setPage(p => p + 1)} disabled={campaigns.length < 50} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Next</button>
+            <button onClick={() => updateFilters({ page: Math.max(1, filters.page - 1) })} disabled={filters.page === 1} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Prev</button>
+            <span className="text-[#FFFFFF]">Page {filters.page}</span>
+            <button onClick={() => updateFilters({ page: filters.page + 1 })} disabled={campaigns.length < 50} className="px-2.5 py-1 bg-transparent border border-[#202126] rounded-[8px] disabled:opacity-40 hover:border-[#8A8D96] text-[#FFFFFF] transition-all cursor-pointer disabled:cursor-not-allowed">Next</button>
           </div>
         </div>
       )}
