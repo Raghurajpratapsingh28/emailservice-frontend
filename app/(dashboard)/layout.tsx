@@ -8,7 +8,6 @@ import NavigationProgress from "@/components/dashboard/navigation-progress"
 import { useAuth } from "@/lib/auth-context"
 import { useWorkspace } from "@/lib/workspace-context"
 import { KeyboardShortcutsProvider } from "@/lib/keyboard-shortcuts"
-import FeedbackWidget from "@/components/dashboard/feedback-widget"
 
 export default function DashboardLayout({
   children,
@@ -52,7 +51,6 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
-      <FeedbackWidget />
     </KeyboardShortcutsProvider>
   )
 }

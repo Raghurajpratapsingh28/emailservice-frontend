@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { createPortal } from "react-dom"
 import {
   ChevronLeft, ChevronRight, X, MessageSquare, Bug,
   Lightbulb, Star, Send, CheckCircle2, Loader2
@@ -58,9 +59,13 @@ export default function FeedbackWidget() {
   }
 
   const selectedType = FEEDBACK_TYPES.find((t) => t.id === activeType)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
-  return (
-    <div className="fixed bottom-6 right-0 z-50 flex items-end" ref={panelRef}>
+  if (!mounted) return null
+
+  return createPortal(
+    <div className="fixed bottom-6 right-0 z-[9999] flex items-end" ref={panelRef}>
       {/* Slide-in panel */}
       <div
         className={`
@@ -112,7 +117,7 @@ export default function FeedbackWidget() {
                     className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left transition-all hover:bg-[#1E2028] group"
                   >
                     <div
-                      className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                      className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
                       style={{ backgroundColor: type.color + "20" }}
                     >
                       <Icon size={14} style={{ color: type.color }} />
@@ -218,6 +223,7 @@ export default function FeedbackWidget() {
       >
         {isOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
-    </div>
+    </div>,
+    document.body
   )
 }
