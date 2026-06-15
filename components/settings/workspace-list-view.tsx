@@ -8,10 +8,12 @@ import { workspaceService, type Workspace } from "@/lib/workspace-service"
 import { useWorkspace } from "@/lib/workspace-context"
 import { apiClient } from "@/lib/api-client"
 import { tokenManager } from "@/lib/token-manager"
+import { useAuth } from "@/lib/auth-context"
 
 export default function WorkspaceListView() {
   const router = useRouter()
   const { setWorkspaceId } = useWorkspace()
+  const { storeTokensAndUser } = useAuth()
   const [workspaces, setWorkspaces] = useState<Array<{ workspace: Workspace; role: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -48,7 +50,12 @@ export default function WorkspaceListView() {
       // Auto-switch to newly created workspace
       const newWorkspaceId = result.workspace.id
       const switchRes = await workspaceService.switchWorkspace(newWorkspaceId)
-      apiClient.setAccessToken(switchRes.accessToken)
+      await storeTokensAndUser({
+        accessToken: switchRes.accessToken,
+        expiresIn: switchRes.expiresIn,
+        refreshToken: tokenManager.getRefreshToken() || "",
+        tokenType: "Bearer",
+      })
       setWorkspaceId(newWorkspaceId)
       router.push(`/campaigns/${newWorkspaceId}`)
     } catch (error) {
@@ -62,8 +69,12 @@ export default function WorkspaceListView() {
     e.stopPropagation()
     try {
       const res = await workspaceService.switchWorkspace(workspaceId)
-      apiClient.setAccessToken(res.accessToken)
-      tokenManager.setAccessToken(res.accessToken, res.expiresIn)
+      await storeTokensAndUser({
+        accessToken: res.accessToken,
+        expiresIn: res.expiresIn,
+        refreshToken: tokenManager.getRefreshToken() || "",
+        tokenType: "Bearer",
+      })
       router.push(`/settings/${workspaceId}`)
     } catch (error) {
       console.error("Failed to switch workspace:", error)
@@ -90,7 +101,7 @@ export default function WorkspaceListView() {
         {workspaces.map(({ workspace, role }) => (
           <div key={workspace.id} className="p-6 bg-[#18191C] border border-[#202126] rounded-[12px] hover:border-[#696CFF] transition-all">
             <div className="flex items-start justify-between">
-              <div className="flex-1" onClick={() => router.push(`/settings/${workspace.id}`)} className="cursor-pointer">
+              <div className="flex-1 cursor-pointer" onClick={() => router.push(`/settings/${workspace.id}`)}>
                 <div className="flex items-center gap-3">
                   <h3 className="text-lg font-bold text-[#FFFFFF]">{workspace.name}</h3>
                   <span className="text-[9px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-lg bg-[#6B7280]/10 border border-[#6B7280]/20 text-[#8A8D96]">{role}</span>
@@ -133,7 +144,9 @@ export default function WorkspaceListView() {
                 <select value={plan} onChange={e => setPlan(e.target.value)} className="w-full px-3.5 py-2.5 bg-[#18191C] border border-[#202126] hover:border-[#696CFF] focus:border-[#696CFF] rounded-[12px] text-xs text-[#FFFFFF] cursor-pointer focus:outline-none transition-colors">
                   <option value="free">Free</option>
                   <option value="starter">Starter</option>
+                  <option value="growth">Growth</option>
                   <option value="pro">Pro</option>
+                  <option value="scale">Scale</option>
                   <option value="enterprise">Enterprise</option>
                 </select>
               </div>

@@ -10,7 +10,7 @@ interface Props {
   onSelectPlan: (planId: string, interval: BillingInterval) => void
 }
 
-const PLAN_ORDER = ["free", "starter", "growth", "pro"]
+const PLAN_ORDER = ["free", "starter", "growth", "pro", "scale"]
 
 export default function PlansGrid({ currentPlanId, userRole, onSelectPlan }: Props) {
   const [interval, setInterval] = useState<BillingInterval>("monthly")
@@ -38,7 +38,7 @@ export default function PlansGrid({ currentPlanId, userRole, onSelectPlan }: Pro
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {PLANS.map((plan, idx) => {
           const isCurrent = plan.id === currentPlanId
           const isUpgrade = idx > currentIdx
@@ -66,7 +66,7 @@ export default function PlansGrid({ currentPlanId, userRole, onSelectPlan }: Pro
                 {isCurrent && <Sparkles className="w-4 h-4 text-[#8A8D96]" />}
               </div>
 
-              <div className="space-y-2 flex-1 mb-5">
+              <div className="space-y-2 mb-5">
                 {[
                   { label: "Contacts", value: plan.contacts },
                   { label: "Emails/mo", value: plan.emails },
@@ -75,6 +75,16 @@ export default function PlansGrid({ currentPlanId, userRole, onSelectPlan }: Pro
                   <div key={label} className="flex items-center justify-between text-xs">
                     <span className="text-[#8A8D96] font-medium uppercase tracking-wider">{label}</span>
                     <span className="font-medium uppercase tracking-wider font-semibold text-[#FFFFFF]/80">{value.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Checklist features */}
+              <div className="space-y-2 flex-1 mb-6 border-t border-[#202126]/60 pt-4">
+                {plan.features.map((feature, i) => (
+                  <div key={i} className="flex items-start gap-2 text-[11px] text-[#8A8D96]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#3CD3AD] shrink-0 mt-0.5" />
+                    <span>{feature}</span>
                   </div>
                 ))}
               </div>

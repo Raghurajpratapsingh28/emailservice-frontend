@@ -64,6 +64,17 @@ const PLAN_THEMES: Record<string, PlanTheme> = {
     buttonText: "#1A1500",
     planNameClass: "bg-gradient-to-r from-[#CA8A04] via-[#EAB308] to-[#FDE68A] bg-clip-text text-transparent",
   },
+  scale: {
+    badge: "bg-[#25153c] text-[#a78bfa]",
+    badgeDot: "bg-[#a78bfa]",
+    accent: "#7c3aed",
+    accentText: "#a78bfa",
+    border: "border-[#7c3aed]/40",
+    glow: "shadow-[0_0_32px_0_rgba(124,58,237,0.18)]",
+    button: "bg-gradient-to-r from-[#6d28d9] via-[#7c3aed] to-[#a78bfa] hover:from-[#5b21b6] hover:via-[#6d28d9] hover:to-[#7c3aed] text-white",
+    buttonText: "#ffffff",
+    planNameClass: "bg-gradient-to-r from-[#7c3aed] via-[#a78bfa] to-[#c084fc] bg-clip-text text-transparent",
+  },
 }
 
 export default function PlanCard({ subscription, onPortal }: Props) {

@@ -25,8 +25,8 @@ class ApiClient {
   async request<T>(endpoint: string, config: RequestConfig = {}): Promise<T> {
     const { skipAuth, ...fetchConfig } = config;
     
-    const headers: HeadersInit = {
-      ...fetchConfig.headers,
+    const headers: Record<string, string> = {
+      ...(fetchConfig.headers as Record<string, string>),
     };
 
     // Only set Content-Type for requests with a body
